@@ -1,7 +1,10 @@
 #pragma once
 
 #include <chrono>
-#include "msa.h"
+#include <vector>
+#include "token_response.h"
+#include "legacy_token.h"
+#include "compact_token.h"
 
 namespace rapidxml { template <typename T> class xml_node; }
 

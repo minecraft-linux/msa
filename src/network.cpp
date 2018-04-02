@@ -1,5 +1,6 @@
 #include <msa/network.h>
 
+#include <stdexcept>
 #include <sstream>
 #include <cstring>
 #include <iostream>
