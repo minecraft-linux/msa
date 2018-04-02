@@ -1,9 +1,9 @@
-#include "msa.h"
+#include <msa/msa.h>
 
 #include <random>
 #include <cstring>
-#include "msa_token.h"
-#include "msa_network.h"
+#include "../include/msa/token.h"
+#include "../include/msa/network.h"
 
 MSADeviceAuth const& MSALoginManager::requestDeviceAuth() {
     if (!hasReadDeviceAuth && storageManager) {

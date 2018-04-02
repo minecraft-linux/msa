@@ -1,4 +1,4 @@
-#include "msa_network.h"
+#include <msa/network.h>
 
 #include <sstream>
 #include <cstring>
@@ -19,8 +19,8 @@
 #endif
 #include <random>
 #include <netinet/in.h>
-#include "../common/base64.h"
-#include "../common/log.h"
+#include <base64.h>
+#include <log.h>
 
 std::chrono::milliseconds MSANetwork::serverTimeOffset;
 

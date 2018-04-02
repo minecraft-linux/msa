@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-#include "msa_token.h"
+#include "token.h"
 
 class MSAErrorInfo;
 class MSATokenResponse;
