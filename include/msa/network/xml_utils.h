@@ -26,6 +26,20 @@ public:
         return node->value();
     }
 
+    static const char* docCopyString(rapidxml::xml_document<char>& doc, std::string const& value) {
+        return doc.allocate_string(value.data(), value.length());
+    }
+
+    static rapidxml::xml_node<char>* allocateNodeCopyValue(rapidxml::xml_document<char>& doc, const char* key,
+                                                           std::string const& value) {
+        return doc.allocate_node(rapidxml::node_element, key, docCopyString(doc, value), 0, value.length());
+    }
+
+    static rapidxml::xml_attribute<char>* allocateAttrCopyValue(rapidxml::xml_document<char>& doc, const char* key,
+                                                                std::string const& value) {
+        return doc.allocate_attribute(key, docCopyString(doc, value), 0, value.length());
+    }
+
 };
 
 }
