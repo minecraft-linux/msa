@@ -5,7 +5,7 @@ project(msa LANGUAGES CXX)
 find_library(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 
-add_library(msa src/account.cpp src/device_auth.cpp src/login_manager.cpp src/network.cpp include/msa/account.h include/msa/device_auth.h include/msa/login_manager.h include/msa/token.h include/msa/compact_token.h include/msa/legacy_token.h include/msa/token_response.h include/msa/storage_manager.h include/msa/scope.h include/msa/network.h src/network/request.cpp include/msa/network/request.h src/network/server_time.cpp include/msa/network/server_time.h src/network/device_add_request.cpp include/msa/network/device_add_request.h src/network/server_config.cpp include/msa/network/server_config.h include/msa/network/service_exception.h src/network/service_exception.cpp include/msa/network/parse_exception.h include/msa/network/xml_utils.h)
+add_library(msa src/account.cpp src/device_auth.cpp src/login_manager.cpp src/legacy_network.cpp include/msa/account.h include/msa/device_auth.h include/msa/login_manager.h include/msa/token.h include/msa/compact_token.h include/msa/legacy_token.h include/msa/token_response.h include/msa/storage_manager.h include/msa/scope.h include/msa/legacy_network.h src/network/request.cpp include/msa/network/request.h src/network/server_time.cpp include/msa/network/server_time.h src/network/device_add_request.cpp include/msa/network/device_add_request.h src/network/server_config.cpp include/msa/network/server_config.h include/msa/network/service_exception.h src/network/service_exception.cpp include/msa/network/parse_exception.h include/msa/network/xml_utils.h)
 target_include_directories(msa PUBLIC include/)
 target_include_directories(msa PRIVATE ${OPENSSL_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 target_link_libraries(msa logger base64 rapidxml)

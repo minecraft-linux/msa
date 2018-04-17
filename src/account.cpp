@@ -1,28 +1,30 @@
 #include <msa/account.h>
 
-#include <msa/network.h>
+#include <msa/legacy_network.h>
 #include <msa/login_manager.h>
 
-MSAAccount::MSAAccount(std::shared_ptr<MSALoginManager> manager, std::string const &username, std::string const &cid,
-                       std::shared_ptr<MSALegacyToken> daToken) : manager(manager), username(username), cid(cid),
-                                                                  daToken(daToken) {
+using namespace msa;
+
+Account::Account(std::shared_ptr<LoginManager> manager, std::string const &username, std::string const &cid,
+                 std::shared_ptr<LegacyToken> daToken) : manager(manager), username(username), cid(cid), 
+                                                         daToken(daToken) {
     //
 }
 
 
-std::unordered_map<MSASecurityScope, MSATokenResponse> MSAAccount::requestTokens(std::vector<MSASecurityScope> const& scopes) {
-    std::vector<MSASecurityScope> requestScopes;
-    std::unordered_map<MSASecurityScope, MSATokenResponse> ret;
-    for (MSASecurityScope const& scope : scopes) {
+std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(std::vector<SecurityScope> const& scopes) {
+    std::vector<SecurityScope> requestScopes;
+    std::unordered_map<SecurityScope, TokenResponse> ret;
+    for (SecurityScope const& scope : scopes) {
         if (cachedTokens.count(scope) > 0 && !cachedTokens[{scope.address}]->isExpired()) {
-            ret[scope] = MSATokenResponse(scope, cachedTokens[{scope.address}]);
+            ret[scope] = TokenResponse(scope, cachedTokens[{scope.address}]);
             continue;
         }
         requestScopes.push_back(scope);
     }
-    std::vector<MSATokenResponse> resp = MSANetwork::requestTokens(daToken, manager->requestDeviceAuth().token, scopes);
+    std::vector<TokenResponse> resp = LegacyNetwork::requestTokens(daToken, manager->requestDeviceAuth().token, scopes);
     bool hasNewTokens = false;
-    for (MSATokenResponse& token : resp) {
+    for (TokenResponse& token : resp) {
         if (!token.hasError()) {
             cachedTokens[token.getSecurityScope()] = token.getToken();
             hasNewTokens = true;

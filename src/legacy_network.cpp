@@ -1,4 +1,4 @@
-#include <msa/network.h>
+#include <msa/legacy_network.h>
 
 #include <stdexcept>
 #include <sstream>
@@ -23,7 +23,9 @@
 #include <base64.h>
 #include <log.h>
 
-std::chrono::milliseconds MSANetwork::serverTimeOffset;
+using namespace msa;
+
+std::chrono::milliseconds LegacyNetwork::serverTimeOffset;
 
 static size_t curl_stringstream_write_func(void* ptr, size_t size, size_t nmemb, std::stringstream* s) {
     s->write((char*) ptr, size * nmemb);
@@ -37,12 +39,12 @@ static size_t curl_header_callback(char* buffer, size_t size, size_t nitems, voi
         strptime(s.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
         auto serverTime = std::chrono::system_clock::from_time_t(timegm(&tm));
         auto localTime = std::chrono::system_clock::now();
-        MSANetwork::serverTimeOffset = std::chrono::duration_cast<std::chrono::milliseconds>(serverTime.time_since_epoch()) - std::chrono::duration_cast<std::chrono::milliseconds>(localTime.time_since_epoch());
+        LegacyNetwork::serverTimeOffset = std::chrono::duration_cast<std::chrono::milliseconds>(serverTime.time_since_epoch()) - std::chrono::duration_cast<std::chrono::milliseconds>(localTime.time_since_epoch());
     }
     return nitems * size;
 }
 
-std::string MSANetwork::send(std::string const& url, std::string const& data) {
+std::string LegacyNetwork::send(std::string const& url, std::string const& data) {
     Log::trace("MSANetwork", "Send %s: %s", url.c_str(), data.c_str());
 
     CURL* curl = curl_easy_init();
@@ -60,11 +62,11 @@ std::string MSANetwork::send(std::string const& url, std::string const& data) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_stringstream_write_func);
     curl_easy_perform(curl);
-    Log::trace("MSANetwork", "Reply: %s", output.str().c_str());
+    Log::trace("LegacyNetwork", "Reply: %s", output.str().c_str());
     return output.str();
 }
 
-std::string MSANetwork::escapeText(std::string str) {
+std::string LegacyNetwork::escapeText(std::string str) {
     for (ssize_t i = (ssize_t) str.length() - 1; i >= 0; --i) {
         if (str[i] == '<')
             str.replace((size_t) i, 1, "&lt;");
@@ -74,7 +76,7 @@ std::string MSANetwork::escapeText(std::string str) {
     return std::move(str);
 }
 
-std::string MSANetwork::escapeURL(std::string str) {
+std::string LegacyNetwork::escapeURL(std::string str) {
     CURL* curl = curl_easy_init();
     char* escaped = curl_easy_escape(curl, str.data(), str.length());
     std::string ret (escaped);
@@ -82,7 +84,7 @@ std::string MSANetwork::escapeURL(std::string str) {
     return ret;
 }
 
-std::string MSANetwork::generateTimestamp() {
+std::string LegacyNetwork::generateTimestamp() {
     std::chrono::system_clock::time_point created = getServerTime();
 
     char createdTimestamp[24];
@@ -100,8 +102,8 @@ std::string MSANetwork::generateTimestamp() {
     return ss.str();
 }
 
-std::string MSANetwork::generateKey(int keyLength, std::string const& sessionKey, std::string const& keyUsage,
-                                    std::string const& nonce) {
+std::string LegacyNetwork::generateKey(int keyLength, std::string const& sessionKey, std::string const& keyUsage,
+                                       std::string const& nonce) {
     std::string ret;
     ret.reserve((size_t) keyLength);
     unsigned char* buf = new unsigned char[sizeof(int) + keyUsage.length() + sizeof(char) + nonce.length() + sizeof(int)];
@@ -132,7 +134,7 @@ std::string MSANetwork::generateKey(int keyLength, std::string const& sessionKey
     return ret;
 }
 
-std::string MSANetwork::generateNonce() {
+std::string LegacyNetwork::generateNonce() {
     std::string ret;
     ret.resize(32);
     std::random_device rd;
@@ -142,7 +144,7 @@ std::string MSANetwork::generateNonce() {
     return ret;
 }
 
-std::string MSANetwork::generateDeviceDAToken(std::shared_ptr<MSALegacyToken> deviceToken) {
+std::string LegacyNetwork::generateDeviceDAToken(std::shared_ptr<LegacyToken> deviceToken) {
     using namespace std::chrono;
     std::stringstream ss;
     std::string nonce = generateNonce();
@@ -154,7 +156,7 @@ std::string MSANetwork::generateDeviceDAToken(std::shared_ptr<MSALegacyToken> de
     return ss.str();
 }
 
-std::string MSANetwork::generateSignedInfoBlock(std::string const& section, std::string const& text) {
+std::string LegacyNetwork::generateSignedInfoBlock(std::string const& section, std::string const& text) {
     std::string hash;
 #ifdef __APPLE__
     hash.resize(CC_SHA256_DIGEST_LENGTH);
@@ -178,8 +180,8 @@ std::string MSANetwork::generateSignedInfoBlock(std::string const& section, std:
     return ss.str();
 }
 
-std::string MSANetwork::createSignature(std::string const& data, std::string const& binarySecret,
-                                        std::string const& keyUsage, std::string const& nonce) {
+std::string LegacyNetwork::createSignature(std::string const& data, std::string const& binarySecret,
+                                           std::string const& keyUsage, std::string const& nonce) {
     std::string signatureKey = generateKey(32, binarySecret, keyUsage, nonce);
 #ifdef __APPLE__
     unsigned char signatureBuf[CC_SHA256_DIGEST_LENGTH];
@@ -193,7 +195,7 @@ std::string MSANetwork::createSignature(std::string const& data, std::string con
 #endif
 }
 
-std::string MSANetwork::decryptData(rapidxml::xml_node<char>* node, std::string const& binarySecret,
+std::string LegacyNetwork::decryptData(rapidxml::xml_node<char>* node, std::string const& binarySecret,
                                     std::string const& nonce) {
     rapidxml::xml_node<char>* cipherData = node->first_node("CipherData");
     if (cipherData == nullptr)
@@ -240,7 +242,7 @@ std::string MSANetwork::decryptData(rapidxml::xml_node<char>* node, std::string 
     return decryptedData;
 }
 
-MSATokenResponse MSANetwork::parseTokenResponse(rapidxml::xml_node<char>* node) {
+TokenResponse LegacyNetwork::parseTokenResponse(rapidxml::xml_node<char>* node) {
     rapidxml::xml_node<char>* appliesTo = node->first_node("wsp:AppliesTo");
     if (appliesTo == nullptr)
         throw std::runtime_error("Failed to find wsp:AppliesTo");
@@ -251,15 +253,15 @@ MSATokenResponse MSANetwork::parseTokenResponse(rapidxml::xml_node<char>* node) 
     if (address == nullptr)
         throw std::runtime_error("Failed to find wsa:Address");
 
-    MSASecurityScope scope = {std::string(address->value(), address->value_size())};
+    SecurityScope scope = {std::string(address->value(), address->value_size())};
 
     rapidxml::xml_node<char>* tokenType = node->first_node("wst:TokenType");
     if (tokenType == nullptr) {
         rapidxml::xml_node<char>* psf = node->first_node("psf:pp");
-        return MSATokenResponse(scope, parseErrorInfo(psf));
+        return TokenResponse(scope, parseErrorInfo(psf));
     }
 
-    MSAToken::ExpireTime expire;
+    Token::ExpireTime expire;
     rapidxml::xml_node<char>* lifetime = node->first_node("wst:Lifetime");
     if (lifetime != nullptr) {
         rapidxml::xml_node<char>* expires = node->first_node("wsu:Expires");
@@ -269,15 +271,15 @@ MSATokenResponse MSANetwork::parseTokenResponse(rapidxml::xml_node<char>* node) 
     }
 
     if (strcmp(tokenType->value(), "urn:passport:legacy") == 0)
-        return MSATokenResponse(scope, parseLegacyToken(node, scope, expire));
+        return TokenResponse(scope, parseLegacyToken(node, scope, expire));
     else if (strcmp(tokenType->value(), "urn:passport:compact") == 0)
-        return MSATokenResponse(scope, parseCompactToken(node, scope, expire));
+        return TokenResponse(scope, parseCompactToken(node, scope, expire));
 
-    return MSATokenResponse(scope, std::shared_ptr<MSAErrorInfo>(new MSAErrorInfo()));
+    return TokenResponse(scope, std::shared_ptr<TokenErrorInfo>(new TokenErrorInfo()));
 }
 
-std::shared_ptr<MSALegacyToken> MSANetwork::parseLegacyToken(rapidxml::xml_node<char>* node, MSASecurityScope scope,
-                                                             MSAToken::ExpireTime expire) {
+std::shared_ptr<LegacyToken> LegacyNetwork::parseLegacyToken(rapidxml::xml_node<char>* node, SecurityScope scope,
+                                                             Token::ExpireTime expire) {
     rapidxml::xml_node<char>* requested = node->first_node("wst:RequestedSecurityToken");
     if (requested == nullptr)
         throw std::runtime_error("Failed to find wst:RequestedSecurityToken");
@@ -293,23 +295,23 @@ std::shared_ptr<MSALegacyToken> MSANetwork::parseLegacyToken(rapidxml::xml_node<
 
     std::stringstream ss;
     rapidxml::print_to_stream(ss, *data, rapidxml::print_no_indenting);
-    return std::shared_ptr<MSALegacyToken>(new MSALegacyToken(scope, expire, ss.str(), Base64::decode(binarySecret->value())));
+    return std::shared_ptr<LegacyToken>(new LegacyToken(scope, expire, ss.str(), Base64::decode(binarySecret->value())));
 }
 
-std::shared_ptr<MSACompactToken> MSANetwork::parseCompactToken(rapidxml::xml_node<char>* node, MSASecurityScope scope,
-                                                               MSAToken::ExpireTime expire) {
+std::shared_ptr<CompactToken> LegacyNetwork::parseCompactToken(rapidxml::xml_node<char>* node, SecurityScope scope,
+                                                               Token::ExpireTime expire) {
     rapidxml::xml_node<char>* requested = node->first_node("wst:RequestedSecurityToken");
     if (requested == nullptr)
         throw std::runtime_error("Failed to find wst:RequestedSecurityToken");
     rapidxml::xml_node<char>* data = requested->first_node("wsse:BinarySecurityToken");
     if (data == nullptr)
         throw std::runtime_error("Failed to find wsse:BinarySecurityToken");
-    return std::shared_ptr<MSACompactToken>(new MSACompactToken(scope, expire, data->value()));
+    return std::shared_ptr<CompactToken>(new CompactToken(scope, expire, data->value()));
 }
 
 
-std::shared_ptr<MSAErrorInfo> MSANetwork::parseErrorInfo(rapidxml::xml_node<char>* node) {
-    std::shared_ptr<MSAErrorInfo> ret (new MSAErrorInfo());
+std::shared_ptr<TokenErrorInfo> LegacyNetwork::parseErrorInfo(rapidxml::xml_node<char>* node) {
+    std::shared_ptr<TokenErrorInfo> ret (new TokenErrorInfo());
     if (node == nullptr)
         return ret;
     rapidxml::xml_node<char>* reqStatus = node->first_node("psf:reqstatus");
@@ -330,7 +332,7 @@ std::shared_ptr<MSAErrorInfo> MSANetwork::parseErrorInfo(rapidxml::xml_node<char
     return ret;
 }
 
-std::string MSANetwork::addDevice(std::string const& membername, std::string const& password) {
+std::string LegacyNetwork::addDevice(std::string const& membername, std::string const& password) {
     std::stringstream ss;
     ss << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
        << "<DeviceAddRequest>"
@@ -357,7 +359,7 @@ std::string MSANetwork::addDevice(std::string const& membername, std::string con
     return puid->value();
 }
 
-std::shared_ptr<MSALegacyToken> MSANetwork::authenticateDevice(std::string const& membername,
+std::shared_ptr<LegacyToken> LegacyNetwork::authenticateDevice(std::string const& membername,
                                                                std::string const& password) {
     using namespace std::chrono;
     milliseconds messageID = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
@@ -407,12 +409,12 @@ std::shared_ptr<MSALegacyToken> MSANetwork::authenticateDevice(std::string const
     rapidxml::xml_node<char>* token = body->first_node("wst:RequestSecurityTokenResponse");
     if (token == nullptr)
         throw std::runtime_error("Failed to find the token");
-    return parseLegacyToken(token, MSASecurityScope(), MSAToken::ExpireTime());
+    return parseLegacyToken(token, SecurityScope(), Token::ExpireTime());
 }
 
-std::vector<MSATokenResponse> MSANetwork::requestTokens(std::shared_ptr<MSALegacyToken> daToken,
-                                                        std::shared_ptr<MSALegacyToken> deviceToken,
-                                                        std::vector<MSASecurityScope> const& scopes) {
+std::vector<TokenResponse> LegacyNetwork::requestTokens(std::shared_ptr<LegacyToken> daToken,
+                                                        std::shared_ptr<LegacyToken> deviceToken,
+                                                        std::vector<SecurityScope> const& scopes) {
     using namespace std::chrono;
     milliseconds messageID = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
@@ -422,7 +424,7 @@ std::vector<MSATokenResponse> MSANetwork::requestTokens(std::shared_ptr<MSALegac
     std::stringstream rs;
     rs << "<ps:RequestMultipleSecurityTokens xmlns:ps=\"http://schemas.microsoft.com/Passport/SoapServices/PPCRL\" Id=\"RSTS\">";
     int tokenId = 0;
-    for (MSASecurityScope const& scope : scopes) {
+    for (SecurityScope const& scope : scopes) {
         rs << "<wst:RequestSecurityToken xmlns:wst=\"http://schemas.xmlsoap.org/ws/2005/02/trust\" Id=\"RST" << tokenId << "\">"
            <<   "<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
            <<   "<wsp:AppliesTo xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2004/09/policy\">"
@@ -516,14 +518,14 @@ std::vector<MSATokenResponse> MSANetwork::requestTokens(std::shared_ptr<MSALegac
     if (respNonce.empty())
         throw std::runtime_error("Failed to find the encryption nonce");
     std::string decrypted = decryptData(encryptedData, daToken->getBinarySecret(), respNonce);
-    Log::trace("MSANetwork", "Decrypted body: %s\n", decrypted.c_str());
+    Log::trace("LegacyNetwork", "Decrypted body: %s\n", decrypted.c_str());
 
     rapidxml::xml_document<char> subdoc;
     subdoc.parse<0>(&decrypted[0]);
     root = subdoc.first_node("wst:RequestSecurityTokenResponseCollection");
     if (root == nullptr)
         throw std::runtime_error("Failed to get the root node");
-    std::vector<MSATokenResponse> ret;
+    std::vector<TokenResponse> ret;
     for (auto it = root->first_node("wst:RequestSecurityTokenResponse"); it != nullptr; it = it->next_sibling("wst:RequestSecurityTokenResponse"))
         ret.push_back(parseTokenResponse(it));
     return ret;

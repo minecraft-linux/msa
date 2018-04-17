@@ -6,32 +6,36 @@
 #include <unordered_map>
 #include "scope.h"
 
-class MSATokenResponse;
-class MSALoginManager;
-class MSAToken;
-class MSALegacyToken;
+namespace msa {
 
-class MSAAccount {
+class TokenResponse;
+class LoginManager;
+class Token;
+class LegacyToken;
+
+class Account {
 
 private:
 
-    std::shared_ptr<MSALoginManager> manager;
+    std::shared_ptr<LoginManager> manager;
     std::string username;
     std::string cid;
-    std::shared_ptr<MSALegacyToken> daToken;
+    std::shared_ptr<LegacyToken> daToken;
 
-    std::unordered_map<MSASecurityScope, std::shared_ptr<MSAToken>> cachedTokens;
+    std::unordered_map<SecurityScope, std::shared_ptr<Token>> cachedTokens;
 
 public:
 
-    MSAAccount(std::shared_ptr<MSALoginManager> manager, std::string const& username, std::string const& cid,
-               std::shared_ptr<MSALegacyToken> daToken);
+    Account(std::shared_ptr<LoginManager> manager, std::string const& username, std::string const& cid,
+            std::shared_ptr<LegacyToken> daToken);
 
-    std::unordered_map<MSASecurityScope, MSATokenResponse> requestTokens(std::vector<MSASecurityScope> const& scopes);
+    std::unordered_map<SecurityScope, TokenResponse> requestTokens(std::vector<SecurityScope> const& scopes);
 
     std::string const& getUsername() const { return username; }
     std::string const& getCID() const { return cid; }
-    std::shared_ptr<MSALegacyToken> getDaToken() const { return daToken; }
-    std::unordered_map<MSASecurityScope, std::shared_ptr<MSAToken>> const& getCachedTokens() const { return cachedTokens; }
+    std::shared_ptr<LegacyToken> getDaToken() const { return daToken; }
+    std::unordered_map<SecurityScope, std::shared_ptr<Token>> const& getCachedTokens() const { return cachedTokens; }
 
 };
+
+}

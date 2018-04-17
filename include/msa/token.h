@@ -4,21 +4,25 @@
 #include <chrono>
 #include "scope.h"
 
-class MSAToken {
+namespace msa {
+
+class Token {
 
 public:
     using ExpireTime = std::chrono::system_clock::time_point;
 
 protected:
-    MSASecurityScope securityScope;
+    SecurityScope securityScope;
     ExpireTime expireTime;
 
 public:
-    MSAToken() { }
-    MSAToken(MSASecurityScope const& scope, ExpireTime expire) : securityScope(scope), expireTime(expire) { }
+    Token() { }
+    Token(SecurityScope const& scope, ExpireTime expire) : securityScope(scope), expireTime(expire) { }
 
-    MSASecurityScope const& getSecurityScope() const { return securityScope; }
+    SecurityScope const& getSecurityScope() const { return securityScope; }
 
     bool isExpired() const { return false; } // TODO:
 
 };
+
+}

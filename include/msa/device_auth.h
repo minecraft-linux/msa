@@ -2,23 +2,27 @@
 
 #include <string>
 #include <memory>
-class MSALegacyToken;
 
-class MSADeviceAuth {
+namespace msa {
+
+class LegacyToken;
+
+class DeviceAuth {
 
 private:
-
     static std::string generateRandomCredential(const char* allowedChars, int length);
 
 public:
     std::string membername;
     std::string password;
     std::string puid;
-    std::shared_ptr<MSALegacyToken> token;
+    std::shared_ptr<LegacyToken> token;
 
-    MSADeviceAuth();
-    MSADeviceAuth(std::string membername, std::string password, std::string puid, std::shared_ptr<MSALegacyToken> token);
+    DeviceAuth();
+    DeviceAuth(std::string membername, std::string password, std::string puid, std::shared_ptr<LegacyToken> token);
 
-    static MSADeviceAuth generateRandom();
+    static DeviceAuth generateRandom();
 
 };
+
+}

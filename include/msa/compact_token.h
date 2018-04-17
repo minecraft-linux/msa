@@ -2,17 +2,21 @@
 
 #include "token.h"
 
-class MSACompactToken : public MSAToken {
+namespace msa {
+
+class CompactToken : public Token {
 
 private:
     std::string binaryToken;
 
 public:
-    MSACompactToken(std::string const& binaryToken) : binaryToken(binaryToken) { }
+    CompactToken(std::string const& binaryToken) : binaryToken(binaryToken) { }
 
-    MSACompactToken(MSASecurityScope const& scope, ExpireTime expire, std::string const& binaryToken) :
-            MSAToken(scope, expire), binaryToken(binaryToken) { }
+    CompactToken(SecurityScope const& scope, ExpireTime expire, std::string const& binaryToken) :
+            Token(scope, expire), binaryToken(binaryToken) { }
 
     std::string const& getBinaryToken() const { return binaryToken; }
 
 };
+
+}

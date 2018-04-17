@@ -4,22 +4,25 @@
 #include "storage_manager.h"
 #include "device_auth.h"
 
-class MSAStorageManager;
+namespace msa {
 
-class MSALoginManager {
+class StorageManager;
+
+class LoginManager {
 
 private:
-    std::shared_ptr<MSAStorageManager> storageManager;
-    MSADeviceAuth deviceAuth;
+    std::shared_ptr<StorageManager> storageManager;
+    DeviceAuth deviceAuth;
     bool hasReadDeviceAuth = false;
 
 public:
 
-    MSALoginManager(std::shared_ptr<MSAStorageManager> storageManager) : storageManager(storageManager) { }
+    LoginManager(std::shared_ptr<StorageManager> storageManager) : storageManager(storageManager) {}
 
-    std::shared_ptr<MSAStorageManager> getStorageManager() const { return storageManager; }
+    std::shared_ptr<StorageManager> getStorageManager() const { return storageManager; }
 
-    MSADeviceAuth const& requestDeviceAuth();
+    DeviceAuth const& requestDeviceAuth();
 
 };
 
+}

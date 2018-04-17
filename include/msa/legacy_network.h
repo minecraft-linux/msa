@@ -8,7 +8,9 @@
 
 namespace rapidxml { template <typename T> class xml_node; }
 
-class MSANetwork {
+namespace msa {
+
+class LegacyNetwork {
 
 private:
 
@@ -27,7 +29,7 @@ private:
 
     static std::string generateSignedInfoBlock(std::string const& section, std::string const& text);
 
-    static std::string generateDeviceDAToken(std::shared_ptr<MSALegacyToken> deviceToken);
+    static std::string generateDeviceDAToken(std::shared_ptr<LegacyToken> deviceToken);
 
     static std::string createSignature(std::string const& data, std::string const& binarySecret,
                                        std::string const& keyUsage, std::string const& nonce);
@@ -35,15 +37,15 @@ private:
     static std::string decryptData(rapidxml::xml_node<char>* node, std::string const& binarySecret,
                                    std::string const& nonce);
 
-    static MSATokenResponse parseTokenResponse(rapidxml::xml_node<char>* node);
+    static TokenResponse parseTokenResponse(rapidxml::xml_node<char>* node);
 
-    static std::shared_ptr<MSALegacyToken> parseLegacyToken(rapidxml::xml_node<char>* node, MSASecurityScope scope,
-                                                            MSAToken::ExpireTime expire);
+    static std::shared_ptr<LegacyToken> parseLegacyToken(rapidxml::xml_node<char>* node, SecurityScope scope,
+                                                         Token::ExpireTime expire);
 
-    static std::shared_ptr<MSACompactToken> parseCompactToken(rapidxml::xml_node<char>* node, MSASecurityScope scope,
-                                                              MSAToken::ExpireTime expire);
+    static std::shared_ptr<CompactToken> parseCompactToken(rapidxml::xml_node<char>* node, SecurityScope scope,
+                                                           Token::ExpireTime expire);
 
-    static std::shared_ptr<MSAErrorInfo> parseErrorInfo(rapidxml::xml_node<char>* node);
+    static std::shared_ptr<TokenErrorInfo> parseErrorInfo(rapidxml::xml_node<char>* node);
 
 public:
 
@@ -55,10 +57,12 @@ public:
 
     static std::string addDevice(std::string const& membername, std::string const& password);
 
-    static std::shared_ptr<MSALegacyToken> authenticateDevice(std::string const& membername, std::string const& password);
+    static std::shared_ptr<LegacyToken> authenticateDevice(std::string const& membername, std::string const& password);
 
-    static std::vector<MSATokenResponse> requestTokens(std::shared_ptr<MSALegacyToken> daToken,
-                                                       std::shared_ptr<MSALegacyToken> deviceToken,
-                                                       std::vector<MSASecurityScope> const& scopes);
+    static std::vector<TokenResponse> requestTokens(std::shared_ptr<LegacyToken> daToken,
+                                                    std::shared_ptr<LegacyToken> deviceToken,
+                                                    std::vector<SecurityScope> const& scopes);
 
 };
+
+}

@@ -1,15 +1,19 @@
 #pragma once
 
-class MSALoginManager;
-class MSADeviceAuth;
-class MSAAccount;
+namespace msa {
 
-class MSAStorageManager {
+class LoginManager;
+class DeviceAuth;
+class Account;
+
+class StorageManager {
 
 public:
 
-    virtual void readDeviceAuthInfo(MSALoginManager& manager, MSADeviceAuth& deviceAuth) { }
-    virtual void onDeviceAuthChanged(MSALoginManager& manager, MSADeviceAuth& deviceAuth) { }
-    virtual void onAccountTokenListChanged(MSALoginManager& manager, MSAAccount& account) { }
+    virtual void readDeviceAuthInfo(LoginManager& manager, DeviceAuth& deviceAuth) { }
+    virtual void onDeviceAuthChanged(LoginManager& manager, DeviceAuth& deviceAuth) { }
+    virtual void onAccountTokenListChanged(LoginManager& manager, Account& account) { }
 
 };
+
+}

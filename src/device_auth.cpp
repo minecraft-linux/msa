@@ -4,21 +4,23 @@
 #include <cstring>
 #include <msa/legacy_token.h>
 
-MSADeviceAuth::MSADeviceAuth() {
+using namespace msa;
+
+DeviceAuth::DeviceAuth() {
 }
 
-MSADeviceAuth::MSADeviceAuth(std::string membername, std::string password, std::string puid,
-                             std::shared_ptr<MSALegacyToken> token) : membername(membername), password(password),
-                                                                      puid(puid), token(token) {
+DeviceAuth::DeviceAuth(std::string membername, std::string password, std::string puid,
+                       std::shared_ptr<LegacyToken> token) : membername(membername), password(password),
+                                                             puid(puid), token(token) {
 }
 
-MSADeviceAuth MSADeviceAuth::generateRandom() {
+DeviceAuth DeviceAuth::generateRandom() {
     std::string membername = generateRandomCredential("abcdefghijklmnopqrstuvwxyz", 18);
     std::string password = generateRandomCredential("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}/?;:'\\\",.<>`~", 16);
-    return MSADeviceAuth(membername, password, std::string(), std::shared_ptr<MSALegacyToken>());
+    return DeviceAuth(membername, password, std::string(), std::shared_ptr<LegacyToken>());
 }
 
-std::string MSADeviceAuth::generateRandomCredential(const char* allowedChars, int length) {
+std::string DeviceAuth::generateRandomCredential(const char* allowedChars, int length) {
     std::string ret;
     ret.resize((size_t) length);
     std::uniform_int_distribution<int> d(0, strlen(allowedChars) - 1);
