@@ -17,6 +17,8 @@ public:
 
     CompactToken(rapidxml::xml_node<char> const& data);
 
+    TokenType getType() const { return TokenType::Compact; }
+
     std::string const& getBinaryToken() const { return binaryToken; }
 
 };

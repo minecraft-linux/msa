@@ -18,6 +18,8 @@ public:
 
     LegacyToken(rapidxml::xml_node<char> const& data);
 
+    TokenType getType() const { return TokenType::Legacy; }
+
     std::string const& getXmlData() const { return xmlData; }
     std::string const& getBinarySecret() const { return binarySecret; }
 

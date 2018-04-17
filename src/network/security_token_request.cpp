@@ -23,7 +23,6 @@ SecurityTokenRequestBase::SecurityTokenRequestBase() {
 SecurityTokenResponse SecurityTokenRequestBase::sendTokenRequestInternal() const {
     rapidxml::xml_document<char> doc;
     std::string str = sendInternal();
-    printf("%s\n", str.c_str());
     doc.parse<0>(&str[0]);
     return handleResponse(doc);
 }

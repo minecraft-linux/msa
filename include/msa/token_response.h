@@ -24,8 +24,8 @@ public:
 
     bool hasError() const { return token == nullptr; }
     SecurityScope const& getSecurityScope() const { return securityScope; }
-    std::shared_ptr<Token> getToken() { return token; }
-    std::shared_ptr<TokenErrorInfo> getError() { return error; }
+    std::shared_ptr<Token> getToken() const { return token; }
+    std::shared_ptr<TokenErrorInfo> getError() const { return error; }
 
 };
 

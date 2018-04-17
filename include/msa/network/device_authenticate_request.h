@@ -1,6 +1,7 @@
 #pragma once
 
 #include "security_token_request.h"
+#include "../legacy_token.h"
 
 namespace msa {
 namespace network {
@@ -25,7 +26,7 @@ public:
 
 struct DeviceAuthenticateResponse {
 
-    TokenResponse token;
+    std::shared_ptr<LegacyToken> token;
 
 };
 

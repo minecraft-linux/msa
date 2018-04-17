@@ -24,5 +24,11 @@ void DeviceAuthenticateRequest::buildBody(rapidxml::xml_document<char>& doc, rap
 DeviceAuthenticateResponse DeviceAuthenticateRequest::handleResponse(SecurityTokenResponse const& resp) const {
     if (resp.tokens.size() <= 0)
         throw ParseException("No token returned");
-    return {resp.tokens[0]};
+    auto const& rtoken = resp.tokens[0];
+    if (rtoken.hasError())
+        throw ParseException("Token has error: " + std::to_string(rtoken.getError()->errorStatus));
+    auto token = rtoken.getToken();
+    if (token == nullptr || token->getType() != TokenType::Legacy)
+        throw ParseException("Invalid token received");
+    return {std::dynamic_pointer_cast<LegacyToken>(token)};
 }

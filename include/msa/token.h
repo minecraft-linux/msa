@@ -9,6 +9,10 @@ namespace rapidxml { template <typename T> struct xml_node; }
 
 namespace msa {
 
+enum class TokenType {
+    Legacy, Compact
+};
+
 class Token {
 
 public:
@@ -24,13 +28,18 @@ public:
     Token() { }
     Token(SecurityScope const& scope, ExpireTime expire) : securityScope(scope), expireTime(expire) { }
 
-    static std::shared_ptr<Token> fromXml(rapidxml::xml_node<char> const& data);
+    virtual ~Token() = default;
 
-    static SecurityScope parseSecurityScope(rapidxml::xml_node<char> const& data);
+    virtual TokenType getType() const = 0;
 
     SecurityScope const& getSecurityScope() const { return securityScope; }
 
     bool isExpired() const { return false; } // TODO:
+
+
+    static std::shared_ptr<Token> fromXml(rapidxml::xml_node<char> const& data);
+
+    static SecurityScope parseSecurityScope(rapidxml::xml_node<char> const& data);
 
 };
 
