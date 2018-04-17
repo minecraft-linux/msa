@@ -1,6 +1,6 @@
 #include <msa/network/security_token_request.h>
 #include <msa/network/server_time.h>
-#include <msa/network/xml_utils.h>
+#include <msa/xml_utils.h>
 
 using namespace msa::network;
 using namespace rapidxml;
@@ -23,6 +23,7 @@ SecurityTokenRequestBase::SecurityTokenRequestBase() {
 SecurityTokenResponse SecurityTokenRequestBase::sendTokenRequestInternal() const {
     rapidxml::xml_document<char> doc;
     std::string str = sendInternal();
+    printf("%s\n", str.c_str());
     doc.parse<0>(&str[0]);
     return handleResponse(doc);
 }
@@ -128,6 +129,13 @@ void SecurityTokenRequestBase::buildTokenRequest(rapidxml::xml_document<char>& d
     body.append_node(token);
 }
 
+
 SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_document<char> const& doc) const {
-    return SecurityTokenResponse();
+    auto& envelope = XMLUtils::getRequiredChild(doc, "S:Envelope");
+    auto& body = XMLUtils::getRequiredChild(envelope, "S:Body");
+
+    auto singleToken = body.first_node("wst:RequestSecurityTokenResponse");
+    if (singleToken != nullptr) {
+        return {{TokenResponse::fromXml(*singleToken)}};
+    }
 }

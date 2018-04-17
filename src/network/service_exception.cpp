@@ -1,5 +1,5 @@
 #include <msa/network/service_exception.h>
-#include <msa/network/xml_utils.h>
+#include <msa/xml_utils.h>
 #include <sstream>
 
 using namespace msa::network;

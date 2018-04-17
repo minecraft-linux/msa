@@ -20,6 +20,8 @@ public:
     TokenResponse(SecurityScope scope, std::shared_ptr<Token> token) : securityScope(scope), token(token) { }
     TokenResponse(SecurityScope scope, std::shared_ptr<TokenErrorInfo> error) : securityScope(scope), error(error) { }
 
+    static TokenResponse fromXml(rapidxml::xml_node<char> const& data);
+
     bool hasError() const { return token == nullptr; }
     SecurityScope const& getSecurityScope() const { return securityScope; }
     std::shared_ptr<Token> getToken() { return token; }
@@ -33,6 +35,8 @@ struct TokenErrorInfo {
     std::string flowUrl;
     std::string inlineAuthUrl;
     std::string inlineEndAuthUrl;
+
+    static TokenErrorInfo fromXml(rapidxml::xml_node<char> const& data);
 };
 
 }

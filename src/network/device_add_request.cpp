@@ -1,10 +1,9 @@
 #include <stdexcept>
 #include <cstring>
 #include <msa/network/device_add_request.h>
-#include <rapidxml.hpp>
-#include <msa/network/parse_exception.h>
+#include <msa/parse_exception.h>
 #include <msa/network/service_exception.h>
-#include <msa/network/xml_utils.h>
+#include <msa/xml_utils.h>
 
 using namespace rapidxml;
 using namespace msa::network;

@@ -4,7 +4,6 @@
 #include <string>
 
 namespace msa {
-namespace network {
 
 class ParseException : public std::exception {
 
@@ -20,5 +19,4 @@ public:
 
 };
 
-}
 }

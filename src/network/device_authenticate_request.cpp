@@ -1,5 +1,5 @@
 #include <msa/network/device_authenticate_request.h>
-#include <msa/network/parse_exception.h>
+#include <msa/parse_exception.h>
 
 using namespace msa::network;
 using namespace rapidxml;

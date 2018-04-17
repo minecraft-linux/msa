@@ -15,6 +15,8 @@ public:
     CompactToken(SecurityScope const& scope, ExpireTime expire, std::string const& binaryToken) :
             Token(scope, expire), binaryToken(binaryToken) { }
 
+    CompactToken(rapidxml::xml_node<char> const& data);
+
     std::string const& getBinaryToken() const { return binaryToken; }
 
 };

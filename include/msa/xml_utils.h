@@ -5,7 +5,6 @@
 #include "parse_exception.h"
 
 namespace msa {
-namespace network {
 
 class XMLUtils {
 
@@ -42,5 +41,4 @@ public:
 
 };
 
-}
 }

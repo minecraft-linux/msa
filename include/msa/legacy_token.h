@@ -16,6 +16,8 @@ public:
     LegacyToken(SecurityScope const& scope, ExpireTime expire, std::string const& xmlData,
                 std::string const& key) : Token(scope, expire), xmlData(xmlData), binarySecret(key) { }
 
+    LegacyToken(rapidxml::xml_node<char> const& data);
+
     std::string const& getXmlData() const { return xmlData; }
     std::string const& getBinarySecret() const { return binarySecret; }
 
