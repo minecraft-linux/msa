@@ -24,6 +24,10 @@ protected:
     static const char* const NAMESPACE_WS_SECURECONVERSATION;
     static const char* const NAMESPACE_WS_TRUST;
 
+    static const char* const BINARY_VERSION_STRING;
+    static const char* const DEVICE_TYPE;
+    static const char* const HOSTING_APP;
+
     std::string messageId;
 
     std::string const& getUrl() const override { return ServerConfig::ENDPOINT_RST; }
@@ -44,6 +48,9 @@ protected:
 
     void buildTokenRequest(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
                            SecurityScope const& scope, int index = 0) const;
+
+    rapidxml::xml_node<char>& buildMultipleTokenRequestElement(rapidxml::xml_document<char>& doc,
+                                                               rapidxml::xml_node<char>& body) const;
 
 
 

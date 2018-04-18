@@ -15,6 +15,10 @@ const char* const SecurityTokenRequestBase::NAMESPACE_WS_ADDRESSING = "http://ww
 const char* const SecurityTokenRequestBase::NAMESPACE_WS_SECURECONVERSATION = "http://schemas.xmlsoap.org/ws/2005/02/sc";
 const char* const SecurityTokenRequestBase::NAMESPACE_WS_TRUST = "http://schemas.xmlsoap.org/ws/2005/02/trust";
 
+const char* const SecurityTokenRequestBase::BINARY_VERSION_STRING = "11";
+const char* const SecurityTokenRequestBase::DEVICE_TYPE = "Android";
+const char* const SecurityTokenRequestBase::HOSTING_APP = "{F501FD64-9070-46AB-993C-6F7B71D8D883}"; // MSA login library app id;
+
 SecurityTokenRequestBase::SecurityTokenRequestBase() {
     using namespace std::chrono;
     messageId = std::to_string(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count());
@@ -79,9 +83,9 @@ void SecurityTokenRequestBase::buildHeader(rapidxml::xml_document<char>& doc, ra
 
 void SecurityTokenRequestBase::buildHeaderAuthInfo(rapidxml::xml_document<char>& doc,
                                                    rapidxml::xml_node<char>& authInfo) const {
-    authInfo.append_node(doc.allocate_node(node_element, "ps:BinaryVersion", "11"));
-    authInfo.append_node(doc.allocate_node(node_element, "ps:DeviceType", "Android"));
-    authInfo.append_node(doc.allocate_node(node_element, "ps:HostingApp", "{F501FD64-9070-46AB-993C-6F7B71D8D883}")); // MSA login library app id
+    authInfo.append_node(doc.allocate_node(node_element, "ps:BinaryVersion", BINARY_VERSION_STRING));
+    authInfo.append_node(doc.allocate_node(node_element, "ps:DeviceType", DEVICE_TYPE));
+    authInfo.append_node(doc.allocate_node(node_element, "ps:HostingApp", HOSTING_APP));
 }
 
 void SecurityTokenRequestBase::buildTimestamp(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& parent) const {
@@ -128,6 +132,15 @@ void SecurityTokenRequestBase::buildTokenRequest(rapidxml::xml_document<char>& d
     body.append_node(token);
 }
 
+rapidxml::xml_node<char>& SecurityTokenRequestBase::buildMultipleTokenRequestElement(
+        rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const {
+    auto node = doc.allocate_node(node_element, "ps:RequestMultipleSecurityTokens");
+    node->append_attribute(doc.allocate_attribute("xmlns:ps", NAMESPACE_PPCRL));
+    node->append_attribute(XMLUtils::allocateAttrCopyValue(doc, "Id", "RSTS"));
+    body.append_node(node);
+    return *node;
+}
+
 
 SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_document<char> const& doc) const {
     auto& envelope = XMLUtils::getRequiredChild(doc, "S:Envelope");
@@ -137,4 +150,5 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
     if (singleToken != nullptr) {
         return {{TokenResponse::fromXml(*singleToken)}};
     }
+    return {};
 }
