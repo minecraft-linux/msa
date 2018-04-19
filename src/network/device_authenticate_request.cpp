@@ -4,8 +4,8 @@
 using namespace msa::network;
 using namespace rapidxml;
 
-void DeviceAuthenticateRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc,
-                                                    rapidxml::xml_node<char>& header) const {
+void DeviceAuthenticateRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                                                    XMLSignContext& signContext) const {
     auto usernameToken = doc.allocate_node(node_element, "wsse:UsernameToken");
     usernameToken->append_attribute(doc.allocate_attribute("wsu:Id", "devicesoftware"));
 
@@ -14,10 +14,11 @@ void DeviceAuthenticateRequest::buildHeaderSecurity(rapidxml::xml_document<char>
 
     header.append_node(usernameToken);
 
-    buildTimestamp(doc, header);
+    buildTimestamp(doc, header, signContext);
 }
 
-void DeviceAuthenticateRequest::buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const {
+void DeviceAuthenticateRequest::buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
+                                          XMLSignContext& signContext) const {
     buildTokenRequest(doc, body, {"http://Passport.NET/tb"});
 }
 

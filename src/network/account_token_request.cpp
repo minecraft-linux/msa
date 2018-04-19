@@ -20,8 +20,8 @@ void AccountTokenRequest::buildHeaderAuthInfo(rapidxml::xml_document<char>& doc,
         authInfo.append_node(doc.allocate_node(node_element, "ps:ClientAppURI", clientAppUri.c_str(), 0, clientAppUri.length()));
 }
 
-void AccountTokenRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc,
-                                              rapidxml::xml_node<char>& header) const {
+void AccountTokenRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                                              XMLSignContext& signContext) const {
     {
         rapidxml::xml_document<char> daTokenDoc;
         daTokenDoc.parse<rapidxml::parse_non_destructive>((char*) daToken->getXmlData().c_str());
@@ -33,7 +33,7 @@ void AccountTokenRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc,
     binarySecurityToken->append_attribute(doc.allocate_attribute("Id", "DeviceDAToken"));
     header.append_node(binarySecurityToken);
 
-    buildTimestamp(doc, header);
+    buildTimestamp(doc, header, signContext);
 }
 
 std::string AccountTokenRequest::generateDeviceProofUri() const {
@@ -54,13 +54,18 @@ std::string AccountTokenRequest::generateDeviceProofUri() const {
     return RequestUtils::encodeUrlParams(values);
 }
 
-void AccountTokenRequest::buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const {
+void AccountTokenRequest::buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
+                                    XMLSignContext& signContext) const {
     auto ctr = &body;
-    if (scopes.size() > 1)
+    if (scopes.size() > 1) {
         ctr = &buildMultipleTokenRequestElement(doc, body);
+        signContext.addElement(*ctr);
+    }
 
     int index = 0;
     for (auto const& scope : scopes) {
         buildTokenRequest(doc, *ctr, scope, index++);
     }
+    if (scopes.size() == 1)
+        signContext.addElement(*body.first_node());
 }

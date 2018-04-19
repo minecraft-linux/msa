@@ -5,6 +5,7 @@
 #include "request.h"
 #include "server_config.h"
 #include "../scope.h"
+#include "xml_sign_context.h"
 
 namespace msa {
 namespace network {
@@ -34,17 +35,23 @@ protected:
 
     void createBody(rapidxml::xml_document<char>& doc) const override;
 
+    virtual LegacyToken* getSigingKey() const { return nullptr; }
+
     virtual void appendNamespaces(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& envelope) const;
 
-    virtual void buildHeader(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header) const;
+    virtual void buildHeader(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                             XMLSignContext& signContext) const;
 
     virtual void buildHeaderAuthInfo(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& authInfo) const;
 
-    virtual void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header) const {}
+    virtual void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                                     XMLSignContext& signContext) const {}
 
-    void buildTimestamp(rapidxml::xml_document<char>& doc,rapidxml::xml_node<char>& parent) const;
+    void buildTimestamp(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& parent,
+                        XMLSignContext& signContext) const;
 
-    virtual void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const {}
+    virtual void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
+                           XMLSignContext& signContext) const {}
 
     void buildTokenRequest(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
                            SecurityScope const& scope, int index = 0) const;

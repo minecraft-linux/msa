@@ -11,9 +11,11 @@ struct DeviceAuthenticateResponse;
 class DeviceAuthenticateRequest : public SecurityTokenRequest<DeviceAuthenticateResponse> {
 
 protected:
-    void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header) const override;
+    void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                             XMLSignContext& signContext) const override;
 
-    void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const override;
+    void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
+                   XMLSignContext& signContext) const override;
 
     DeviceAuthenticateResponse handleResponse(SecurityTokenResponse const& resp) const override;
 

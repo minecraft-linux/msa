@@ -11,11 +11,15 @@ using AccountTokenResponse = SecurityTokenResponse;
 class AccountTokenRequest : public SecurityTokenRequest<AccountTokenResponse> {
 
 protected:
+    LegacyToken* getSigingKey() const override { return daToken.get(); }
+
     void buildHeaderAuthInfo(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& authInfo) const override;
 
-    void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header) const override;
+    void buildHeaderSecurity(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                             XMLSignContext& signContext) const override;
 
-    void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body) const override;
+    void buildBody(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,
+                   XMLSignContext& signContext) const override;
 
     AccountTokenResponse handleResponse(SecurityTokenResponse const& resp) const override {
         return resp;

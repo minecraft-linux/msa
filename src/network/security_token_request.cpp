@@ -35,13 +35,19 @@ void SecurityTokenRequestBase::createBody(rapidxml::xml_document<char>& doc) con
     auto envelope = doc.allocate_node(node_element, "s:Envelope");
     appendNamespaces(doc, *envelope);
 
+    XMLSignContext signContext;
+
     auto header = doc.allocate_node(node_element, "s:Header");
-    buildHeader(doc, *header);
+    buildHeader(doc, *header, signContext);
     envelope->append_node(header);
 
     auto body = doc.allocate_node(node_element, "s:Body");
-    buildBody(doc, *body);
+    buildBody(doc, *body, signContext);
     envelope->append_node(body);
+
+    auto signKey = getSigingKey();
+    if (signKey != nullptr)
+        header->first_node("wsse:Security")->append_node(signContext.createSignature(*signKey, doc));
 
     doc.append_node(envelope);
 }
@@ -59,7 +65,8 @@ void SecurityTokenRequestBase::appendNamespaces(rapidxml::xml_document<char>& do
     envelope.append_attribute(doc.allocate_attribute("xmlns:wst", NAMESPACE_WS_TRUST));
 }
 
-void SecurityTokenRequestBase::buildHeader(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header) const {
+void SecurityTokenRequestBase::buildHeader(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& header,
+                                           XMLSignContext& signContext) const {
     auto action = doc.allocate_node(node_element, "wsa:Action", "http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue");
     action->append_attribute(doc.allocate_attribute("s:mustUnderstand", "1"));
     header.append_node(action);
@@ -75,9 +82,10 @@ void SecurityTokenRequestBase::buildHeader(rapidxml::xml_document<char>& doc, ra
     authInfo->append_attribute(doc.allocate_attribute("Id", "PPAuthInfo"));
     buildHeaderAuthInfo(doc, *authInfo);
     header.append_node(authInfo);
+    signContext.addElement(*authInfo);
 
     auto security = doc.allocate_node(node_element, "wsse:Security");
-    buildHeaderSecurity(doc, *security);
+    buildHeaderSecurity(doc, *security, signContext);
     header.append_node(security);
 }
 
@@ -88,7 +96,8 @@ void SecurityTokenRequestBase::buildHeaderAuthInfo(rapidxml::xml_document<char>&
     authInfo.append_node(doc.allocate_node(node_element, "ps:HostingApp", HOSTING_APP));
 }
 
-void SecurityTokenRequestBase::buildTimestamp(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& parent) const {
+void SecurityTokenRequestBase::buildTimestamp(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& parent,
+                                              XMLSignContext& signContext) const {
     std::chrono::system_clock::time_point created = ServerTime::getServerTime();
 
     char createdTimestamp[24];
@@ -99,9 +108,12 @@ void SecurityTokenRequestBase::buildTimestamp(rapidxml::xml_document<char>& doc,
     strftime(expiresTimestamp, sizeof(expiresTimestamp), "%FT%TZ", gmtime(&time));
 
     auto timestampNode = doc.allocate_node(node_element, "wsu:Timestamp");
+    timestampNode->append_attribute(doc.allocate_attribute("xmlns:wsu", NAMESPACE_WSS_UTILITY));
+    timestampNode->append_attribute(doc.allocate_attribute("wsu:Id", "Timestamp"));
     timestampNode->append_node(doc.allocate_node(node_element, "wsu:Created", doc.allocate_string(createdTimestamp)));
     timestampNode->append_node(doc.allocate_node(node_element, "wsu:Expires", doc.allocate_string(expiresTimestamp)));
     parent.append_node(timestampNode);
+    signContext.addElement(*timestampNode);
 }
 
 void SecurityTokenRequestBase::buildTokenRequest(rapidxml::xml_document<char>& doc, rapidxml::xml_node<char>& body,

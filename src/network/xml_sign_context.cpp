@@ -30,11 +30,12 @@ rapidxml::xml_node<char>* XMLSignContext::createSignature(LegacyToken& daToken, 
         signedInfo->append_node(buildSignatureNode(doc, *signNode));
     }
 
-    auto signature = doc.allocate_node(node_element, "SignedInfo");
+    auto signature = doc.allocate_node(node_element, "Signature");
+    signature->append_attribute(doc.allocate_attribute("xmlns", NAMESPACE_XMLDSIG));
     signature->append_node(signedInfo);
 
     std::string signedInfoStr = XMLUtils::printXmlToString(*signature, print_no_indenting);
-    std::string sigValue = CryptoUtils::sign(signedInfoStr, daToken.getBinarySecret(), "WS-SecureConversationWS-SecureConversation", nonce);
+    std::string sigValue = CryptoUtils::sign(signedInfoStr, daToken.getBinarySecret(), "WS-SecureConversationWS-SecureConversation", getNonce());
     signature->append_node(XMLUtils::allocateNodeCopyValue(doc, "SignatureValue", sigValue));
 
     auto keyInfo = doc.allocate_node(node_element, "KeyInfo");
@@ -53,6 +54,13 @@ rapidxml::xml_node<char>* XMLSignContext::buildSignatureNode(rapidxml::xml_docum
     std::string hash = CryptoUtils::sha256(XMLUtils::printXmlToString(ofNode, print_no_indenting));
 
     auto refNode = doc.allocate_node(node_element, "Reference");
+    auto ofNodeIdAttr = ofNode.first_attribute("Id");
+    if (ofNodeIdAttr == nullptr)
+        ofNodeIdAttr = ofNode.first_attribute("wsu:Id");
+    if (ofNodeIdAttr == nullptr)
+        throw std::runtime_error("No id attribute in the node to sign");
+    refNode->append_attribute(XMLUtils::allocateAttrCopyValue(doc, "URI", "#" + std::string(
+            ofNodeIdAttr->value(), ofNodeIdAttr->value_size())));
 
     auto transformsNode = doc.allocate_node(node_element, "Transforms");
     auto transformNode = doc.allocate_node(node_element, "Transform");
