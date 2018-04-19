@@ -32,6 +32,8 @@ void AccountTokenRequest::buildHeaderSecurity(rapidxml::xml_document<char>& doc,
     binarySecurityToken->append_attribute(doc.allocate_attribute("ValueType", "urn:liveid:sha1device"));
     binarySecurityToken->append_attribute(doc.allocate_attribute("Id", "DeviceDAToken"));
     header.append_node(binarySecurityToken);
+
+    buildTimestamp(doc, header);
 }
 
 std::string AccountTokenRequest::generateDeviceProofUri() const {

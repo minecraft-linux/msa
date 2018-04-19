@@ -72,3 +72,20 @@ std::string CryptoUtils::generateSharedKey(size_t keyLength, std::string const& 
     delete[] buf;
     return ret;
 }
+
+std::string CryptoUtils::sha256(std::string const& data) {
+    std::string hash;
+#ifdef __APPLE__
+    hash.resize(CC_SHA256_DIGEST_LENGTH);
+    CC_SHA256(text.data(), text.length(), (unsigned char*) &hash[0]);
+#else
+    unsigned int hashLen = SHA256_DIGEST_LENGTH;
+    hash.resize(hashLen);
+    EVP_Digest((unsigned char*) data.data(), data.length(),
+               (unsigned char*) &hash[0], &hashLen,
+               EVP_sha256(), nullptr);
+    if (hashLen != SHA256_DIGEST_LENGTH)
+        hash.resize(hashLen);
+#endif
+    return hash;
+}

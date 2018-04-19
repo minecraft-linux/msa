@@ -17,6 +17,8 @@ public:
     static std::string generateSharedKey(size_t keyLength, std::string const& sessionKey, std::string const& keyUsage,
                                          std::string const& nonce);
 
+    static std::string sha256(std::string const& data);
+
 };
 
 }

@@ -39,6 +39,8 @@ public:
         return doc.allocate_attribute(key, docCopyString(doc, value), 0, value.length());
     }
 
+    static std::string printXmlToString(rapidxml::xml_node<char>& node, int flags = 0);
+
 };
 
 }
