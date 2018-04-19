@@ -5,6 +5,7 @@
 #include <msa/network/server_time.h>
 #include <msa/xml_utils.h>
 #include <base64.h>
+#include <msa/network/crypto_utils.h>
 
 using namespace msa::network;
 using namespace rapidxml;
@@ -37,7 +38,7 @@ std::string AccountTokenRequest::generateDeviceProofUri() const {
     using namespace std::chrono;
 
     std::vector<std::pair<std::string, std::string>> values;
-    std::string nonce = RequestUtils::createNonce();
+    std::string nonce = CryptoUtils::createNonce();
     values.emplace_back("ct", std::to_string(duration_cast<seconds>(ServerTime::getServerTime().time_since_epoch()).count()));
     values.emplace_back("hashalg", "SHA256");
     values.emplace_back("bver", BINARY_VERSION_STRING);
@@ -45,8 +46,8 @@ std::string AccountTokenRequest::generateDeviceProofUri() const {
     values.emplace_back("da", deviceToken->getXmlData());
     values.emplace_back("nonce", Base64::encode(nonce));
 
-    std::string hash = ""; // TODO: Sign it
-    values.emplace_back("hash", hash);
+    values.emplace_back("hash", CryptoUtils::sign(RequestUtils::encodeUrlParams(values),
+                                                  deviceToken->getBinarySecret(), "WS-SecureConversation", nonce));
 
     return RequestUtils::encodeUrlParams(values);
 }

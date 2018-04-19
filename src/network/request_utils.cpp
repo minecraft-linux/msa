@@ -1,18 +1,7 @@
 #include <msa/network/request_utils.h>
-#include <random>
 #include <sstream>
 
 using namespace msa::network;
-
-std::string RequestUtils::createNonce(size_t size) {
-    std::string ret;
-    ret.resize(size);
-    std::random_device rd;
-    unsigned int* data = (unsigned int*) &ret[0];
-    for (int i = 0; i < size / sizeof(unsigned int); i++)
-        data[i] = rd();
-    return ret;
-}
 
 std::string RequestUtils::urlEscape(std::string const& str) {
     // first check how big the result string should be
