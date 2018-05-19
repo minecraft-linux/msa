@@ -20,7 +20,8 @@ public:
 
 protected:
     SecurityScope securityScope;
-    ExpireTime expireTime;
+    bool hasLifetimeInfo = false;
+    ExpireTime createTime, expireTime;
 
     Token(rapidxml::xml_node<char> const& data);
 
@@ -35,6 +36,8 @@ public:
     SecurityScope const& getSecurityScope() const { return securityScope; }
 
     bool isExpired() const { return false; } // TODO:
+
+    virtual void toXml(rapidxml::xml_node<char>& node);
 
 
     static std::shared_ptr<Token> fromXml(rapidxml::xml_node<char> const& data);

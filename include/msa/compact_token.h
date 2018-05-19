@@ -17,7 +17,9 @@ public:
 
     CompactToken(rapidxml::xml_node<char> const& data);
 
-    TokenType getType() const { return TokenType::Compact; }
+    TokenType getType() const override { return TokenType::Compact; }
+
+    void toXml(rapidxml::xml_node<char>& node) override;
 
     std::string const& getBinaryToken() const { return binaryToken; }
 
