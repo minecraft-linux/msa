@@ -20,7 +20,7 @@ public:
 
     TokenType getType() const override { return TokenType::Legacy; }
 
-    void toXml(rapidxml::xml_node<char>& node) override;
+    void toXml(rapidxml::xml_node<char>& node) const override;
 
     std::string const& getXmlData() const { return xmlData; }
     std::string const& getBinarySecret() const { return binarySecret; }

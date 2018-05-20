@@ -19,7 +19,7 @@ public:
 
     TokenType getType() const override { return TokenType::Compact; }
 
-    void toXml(rapidxml::xml_node<char>& node) override;
+    void toXml(rapidxml::xml_node<char>& node) const override;
 
     std::string const& getBinaryToken() const { return binaryToken; }
 

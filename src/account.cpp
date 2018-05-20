@@ -6,8 +6,8 @@
 using namespace msa;
 
 Account::Account(std::shared_ptr<LoginManager> manager, std::string const &username, std::string const &cid,
-                 std::shared_ptr<LegacyToken> daToken) : manager(manager), username(username), cid(cid), 
-                                                         daToken(daToken) {
+                 std::shared_ptr<LegacyToken> daToken, std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache)
+        : manager(manager), username(username), cid(cid), daToken(daToken), cachedTokens(cache) {
     //
 }
 

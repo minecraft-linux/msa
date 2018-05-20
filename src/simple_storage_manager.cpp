@@ -24,8 +24,12 @@ std::string SimpleStorageManager::getDeviceAuthInfoPath() const {
     return basePath + "deviceAuth.xml";
 }
 
+std::string SimpleStorageManager::getAccountPath(std::string const& cid) const {
+    return basePath + "accounts/account_" + cid + ".xml";
+}
+
 std::string SimpleStorageManager::getAccountPath(Account const& account) const {
-    return basePath + "accounts/account_" + account.getCID() + ".xml";
+    return getAccountPath(account.getCID());
 }
 
 std::vector<char> SimpleStorageManager::readFile(std::ifstream& fs) {
@@ -79,6 +83,58 @@ void SimpleStorageManager::onDeviceAuthChanged(LoginManager&, DeviceAuth& device
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
+std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::shared_ptr<LoginManager> mgr,
+                                                               std::string const& path) {
+    std::ifstream fs (path);
+    if (!fs)
+        throw std::runtime_error("Failed to open account file for reading");
+    auto fd = readFile(fs);
+    rapidxml::xml_document<char> doc;
+    doc.parse<0>(fd.data());
+
+    auto& root = XMLUtils::getRequiredChild(doc, "MsaAccount");
+    if (strcmp(XMLUtils::getAttribute(root, "version", ""), "1"))
+        throw std::runtime_error("Invalid version");
+    std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
+    std::string username = XMLUtils::getRequiredChildValue(root, "Username");
+    auto daTokenNode = root.first_node("Token");
+    std::shared_ptr<LegacyToken> daToken;
+    if (daTokenNode)
+        daToken = token_pointer_cast<LegacyToken>(Token::fromXml(*daTokenNode));
+    std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache;
+    for (auto it = root.first_node("CachedToken"); it != nullptr; it = it->next_sibling("CachedToken")) {
+        auto token = Token::fromXml(*it);
+        cache.insert({token->getSecurityScope(), token});
+    }
+    return std::shared_ptr<Account>(new Account(mgr, username, cid, daToken, cache));
+}
+
+void SimpleStorageManager::saveAccountInfo(Account const& account) {
+    rapidxml::xml_document<char> doc;
+    auto root = doc.allocate_node(node_element, "MsaAccount");
+    doc.append_node(root);
+    root->append_attribute(doc.allocate_attribute("version", "1"));
+    root->append_node(doc.allocate_node(node_element, "CID", account.getCID().c_str()));
+    root->append_node(doc.allocate_node(node_element, "Username", account.getUsername().c_str()));
+    auto daToken = account.getDaToken();
+    if (daToken) {
+        auto tokenNode = doc.allocate_node(node_element, "DaToken");
+        root->append_node(tokenNode);
+        daToken->toXml(*tokenNode);
+    }
+    auto& cachedTokens = account.getCachedTokens();
+    for (auto const& t : cachedTokens) {
+        auto tokenNode = doc.allocate_node(node_element, "CachedToken");
+        root->append_node(tokenNode);
+        t.second->toXml(*tokenNode);
+    }
+
+    std::ofstream fs(getAccountPath(account));
+    if (!fs)
+        throw std::runtime_error("Failed to open device auth info for writing");
+    rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
+}
+
 void SimpleStorageManager::addAccount(std::shared_ptr<Account> account) {
     accounts.insert({account.get(), account});
 }
@@ -88,4 +144,6 @@ void SimpleStorageManager::removeAccount(std::shared_ptr<Account> account) {
 }
 
 void SimpleStorageManager::onAccountTokenListChanged(LoginManager& manager, Account& account) {
+    if (accounts.count(&account) > 0)
+        saveAccountInfo(account);
 }

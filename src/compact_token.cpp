@@ -10,7 +10,7 @@ CompactToken::CompactToken(rapidxml::xml_node<char> const& data) : Token(data) {
     this->binaryToken = std::string(binaryData.value(), binaryData.value_size());
 }
 
-void CompactToken::toXml(rapidxml::xml_node<char>& node) {
+void CompactToken::toXml(rapidxml::xml_node<char>& node) const {
     Token::toXml(node);
     auto& doc = *node.document();
     auto tokenData = doc.allocate_node(node_element, "wst:RequestedSecurityToken");

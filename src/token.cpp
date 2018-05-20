@@ -26,7 +26,7 @@ Token::Token(rapidxml::xml_node<char> const& data) {
     }
 }
 
-void Token::toXml(rapidxml::xml_node<char>& node) {
+void Token::toXml(rapidxml::xml_node<char>& node) const {
     auto& doc = *node.document();
 
     switch (getType()) {

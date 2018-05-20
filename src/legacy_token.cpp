@@ -21,7 +21,7 @@ LegacyToken::LegacyToken(rapidxml::xml_node<char> const& data) : Token(data) {
     this->binarySecret = Base64::decode(std::string(binarySecret.value(), binarySecret.value_size()));
 }
 
-void LegacyToken::toXml(rapidxml::xml_node<char>& node) {
+void LegacyToken::toXml(rapidxml::xml_node<char>& node) const {
     Token::toXml(node);
     auto& doc = *node.document();
     auto tokenData = doc.allocate_node(node_element, "wst:RequestedSecurityToken");

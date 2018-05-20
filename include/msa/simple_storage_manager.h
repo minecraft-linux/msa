@@ -14,9 +14,14 @@ private:
     std::unordered_map<Account*, std::shared_ptr<Account>> accounts;
 
     std::string getDeviceAuthInfoPath() const;
+    std::string getAccountPath(std::string const& cid) const;
     std::string getAccountPath(Account const& account) const;
 
     static std::vector<char> readFile(std::ifstream& fs);
+
+    std::shared_ptr<Account> readAccountInfo(std::shared_ptr<LoginManager> mgr, std::string const& path);
+
+    void saveAccountInfo(Account const& account);
 
 public:
     SimpleStorageManager(std::string const& basePath);

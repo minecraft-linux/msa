@@ -37,7 +37,7 @@ public:
 
     bool isExpired() const { return false; } // TODO:
 
-    virtual void toXml(rapidxml::xml_node<char>& node);
+    virtual void toXml(rapidxml::xml_node<char>& node) const;
 
 
     static std::shared_ptr<Token> fromXml(rapidxml::xml_node<char> const& data);
