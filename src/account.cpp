@@ -5,14 +5,15 @@
 
 using namespace msa;
 
-Account::Account(std::shared_ptr<LoginManager> manager, std::string const &username, std::string const &cid,
-                 std::shared_ptr<LegacyToken> daToken, std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache)
-        : manager(manager), username(username), cid(cid), daToken(daToken), cachedTokens(cache) {
+Account::Account(std::string const &username, std::string const &cid, std::shared_ptr<LegacyToken> daToken,
+                 std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache)
+        : username(username), cid(cid), daToken(daToken), cachedTokens(cache) {
     //
 }
 
 
-std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(std::vector<SecurityScope> const& scopes) {
+std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginManager& loginManager,
+                                                                        std::vector<SecurityScope> const& scopes) {
     std::vector<SecurityScope> requestScopes;
     std::unordered_map<SecurityScope, TokenResponse> ret;
     for (SecurityScope const& scope : scopes) {
@@ -22,7 +23,7 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(std::vec
         }
         requestScopes.push_back(scope);
     }
-    std::vector<TokenResponse> resp = LegacyNetwork::requestTokens(daToken, manager->requestDeviceAuth().token, scopes);
+    std::vector<TokenResponse> resp = LegacyNetwork::requestTokens(daToken, loginManager.requestDeviceAuth().token, scopes);
     bool hasNewTokens = false;
     for (TokenResponse& token : resp) {
         if (!token.hasError()) {
@@ -31,7 +32,7 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(std::vec
         }
         ret[token.getSecurityScope()] = token;
     }
-    if (hasNewTokens && manager->getStorageManager())
-        manager->getStorageManager()->onAccountTokenListChanged(*manager, *this);
+    if (hasNewTokens && loginManager.getStorageManager())
+        loginManager.getStorageManager()->onAccountTokenListChanged(loginManager, *this);
     return ret;
 }

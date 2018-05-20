@@ -8,6 +8,7 @@
 #include <rapidxml_print.hpp>
 #include <msa/xml_utils.h>
 #include <cstring>
+#include <dirent.h>
 
 using namespace msa;
 using namespace rapidxml;
@@ -17,7 +18,19 @@ SimpleStorageManager::SimpleStorageManager(std::string const& basePath) {
         this->basePath = basePath;
     else
         this->basePath = basePath + "/";
-    mkdir((this->basePath + "accounts/").c_str(), 0700);
+
+    std::string accountsPath = this->basePath + "accounts/";
+    mkdir(accountsPath.c_str(), 0700);
+    DIR* dir = opendir(accountsPath.c_str());
+    struct dirent* de;
+    while ((de = readdir(dir)) != nullptr) {
+        size_t d_name_len = strlen(de->d_name);
+        if (d_name_len < 8 + 4 || memcmp("account_", de->d_name, 8) || memcmp(".xml", de->d_name + d_name_len - 4, 4))
+            continue;
+        auto account = readAccountInfo(accountsPath + de->d_name);
+        accounts[account.get()] = account;
+    }
+    closedir(dir);
 }
 
 std::string SimpleStorageManager::getDeviceAuthInfoPath() const {
@@ -83,8 +96,7 @@ void SimpleStorageManager::onDeviceAuthChanged(LoginManager&, DeviceAuth& device
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
-std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::shared_ptr<LoginManager> mgr,
-                                                               std::string const& path) {
+std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::string const& path) {
     std::ifstream fs (path);
     if (!fs)
         throw std::runtime_error("Failed to open account file for reading");
@@ -106,7 +118,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::shared_ptr<L
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope(), token});
     }
-    return std::shared_ptr<Account>(new Account(mgr, username, cid, daToken, cache));
+    return std::shared_ptr<Account>(new Account(username, cid, daToken, cache));
 }
 
 void SimpleStorageManager::saveAccountInfo(Account const& account) {
@@ -137,10 +149,12 @@ void SimpleStorageManager::saveAccountInfo(Account const& account) {
 
 void SimpleStorageManager::addAccount(std::shared_ptr<Account> account) {
     accounts.insert({account.get(), account});
+    saveAccountInfo(*account);
 }
 
 void SimpleStorageManager::removeAccount(std::shared_ptr<Account> account) {
     accounts.erase(account.get());
+    remove(getAccountPath(*account).c_str());
 }
 
 void SimpleStorageManager::onAccountTokenListChanged(LoginManager& manager, Account& account) {
