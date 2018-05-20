@@ -30,8 +30,8 @@ void LegacyToken::toXml(rapidxml::xml_node<char>& node) {
         xmlDataDoc.parse<rapidxml::parse_non_destructive>((char*) xmlData.c_str());
         tokenData->append_node(doc.clone_node(xmlDataDoc.first_node()));
     }
-    doc.append_node(tokenData);
+    node.append_node(tokenData);
     auto proof = doc.allocate_node(node_element, "wst:RequestedProofToken");
     proof->append_node(XMLUtils::allocateNodeCopyValue(doc, "wst:BinarySecret", Base64::encode(binarySecret)));
-    doc.append_node(proof);
+    node.append_node(proof);
 }

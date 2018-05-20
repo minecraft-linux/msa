@@ -46,4 +46,13 @@ public:
 
 };
 
+template <typename Ret>
+Ret& token_cast(Token&);
+
+template <typename Ret>
+std::shared_ptr<Ret> token_pointer_cast(std::shared_ptr<Token>);
+
+template <typename Ret>
+Ret const& token_cast(Token const&);
+
 }

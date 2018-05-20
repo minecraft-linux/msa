@@ -27,4 +27,26 @@ public:
 
 };
 
+template <>
+inline LegacyToken& token_cast(Token& t) {
+    if (t.getType() != TokenType::Legacy)
+        throw std::bad_cast();
+    return (LegacyToken&) t;
+}
+
+template <>
+inline std::shared_ptr<LegacyToken> token_pointer_cast(std::shared_ptr<Token> t) {
+    if (t->getType() != TokenType::Legacy)
+        throw std::bad_cast();
+    return std::static_pointer_cast<LegacyToken>(t);
+}
+
+template <>
+inline LegacyToken const& token_cast(Token const& t) {
+    if (t.getType() != TokenType::Legacy)
+        throw std::bad_cast();
+    return (LegacyToken const&) t;
+}
+
+
 }

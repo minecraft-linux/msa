@@ -11,15 +11,15 @@ class StorageManager;
 class LoginManager {
 
 private:
-    std::shared_ptr<StorageManager> storageManager;
+    StorageManager* storageManager;
     DeviceAuth deviceAuth;
     bool hasReadDeviceAuth = false;
 
 public:
 
-    LoginManager(std::shared_ptr<StorageManager> storageManager) : storageManager(storageManager) {}
+    LoginManager(StorageManager* storageManager) : storageManager(storageManager) {}
 
-    std::shared_ptr<StorageManager> getStorageManager() const { return storageManager; }
+    StorageManager* getStorageManager() const { return storageManager; }
 
     DeviceAuth const& requestDeviceAuth();
 

@@ -15,5 +15,5 @@ void CompactToken::toXml(rapidxml::xml_node<char>& node) {
     auto& doc = *node.document();
     auto tokenData = doc.allocate_node(node_element, "wst:RequestedSecurityToken");
     tokenData->append_node(XMLUtils::allocateNodeCopyValue(doc, "wsse:BinarySecurityToken", binaryToken));
-    doc.append_node(tokenData);
+    node.append_node(tokenData);
 }

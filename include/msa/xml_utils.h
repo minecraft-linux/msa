@@ -25,6 +25,14 @@ public:
         return node->value();
     }
 
+    static std::string getValue(rapidxml::xml_node<char> const& node) {
+        return std::string(node.value(), node.value_size());
+    }
+
+    static std::string getRequiredChildValue(rapidxml::xml_node<char> const& parent, const char* name) {
+        return getValue(getRequiredChild(parent, name));
+    }
+
     static const char* docCopyString(rapidxml::xml_document<char>& doc, std::string const& value) {
         return doc.allocate_string(value.data(), value.length());
     }
