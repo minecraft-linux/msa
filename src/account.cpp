@@ -27,11 +27,10 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
         requestScopes.push_back(scope);
     }
     std::vector<TokenResponse> resp = LegacyNetwork::requestTokens(daToken, loginManager.requestDeviceAuth().token, scopes);
-    std::vector<Token*> newTokens;
+    std::vector<std::shared_ptr<Token>> newTokens;
     for (TokenResponse& token : resp) {
         if (!token.hasError()) {
-            cachedTokens[token.getSecurityScope()] = token.getToken();
-            newTokens.push_back(token.getToken().get());
+            newTokens.push_back(token.getToken());
         }
         ret[token.getSecurityScope()] = token;
     }

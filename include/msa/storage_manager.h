@@ -14,6 +14,7 @@ class BaseAccountInfo;
 class StorageManager {
 
 public:
+    virtual ~StorageManager() {}
 
     virtual void readDeviceAuthInfo(DeviceAuth& deviceAuth) {}
     virtual void saveDeviceAuthInfo(DeviceAuth& deviceAuth) {}

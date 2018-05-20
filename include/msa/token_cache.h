@@ -11,8 +11,10 @@ class Account;
 class TokenCache {
 
 public:
+    virtual ~TokenCache() {}
+
     virtual std::shared_ptr<Token> getTokenFromCache(Account& account, std::string const& scopeAddress) = 0;
-    virtual void onTokensReceived(Account& account, std::vector<Token*> const& tokens) = 0;
+    virtual void onTokensReceived(Account& account, std::vector<std::shared_ptr<Token>> const& tokens) = 0;
 
     virtual std::unordered_map<SecurityScope, std::shared_ptr<Token>> getTokensFromCache
             (Account& account, std::vector<SecurityScope> const& scopes) {
