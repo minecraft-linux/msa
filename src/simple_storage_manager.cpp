@@ -19,18 +19,7 @@ SimpleStorageManager::SimpleStorageManager(std::string const& basePath) {
     else
         this->basePath = basePath + "/";
 
-    std::string accountsPath = this->basePath + "accounts/";
-    mkdir(accountsPath.c_str(), 0700);
-    DIR* dir = opendir(accountsPath.c_str());
-    struct dirent* de;
-    while ((de = readdir(dir)) != nullptr) {
-        size_t d_name_len = strlen(de->d_name);
-        if (d_name_len < 8 + 4 || memcmp("account_", de->d_name, 8) || memcmp(".xml", de->d_name + d_name_len - 4, 4))
-            continue;
-        auto account = readAccountInfo(accountsPath + de->d_name);
-        accounts[account.get()] = account;
-    }
-    closedir(dir);
+    mkdir((this->basePath + "accounts/").c_str(), 0700);
 }
 
 std::string SimpleStorageManager::getDeviceAuthInfoPath() const {
@@ -57,7 +46,24 @@ std::vector<char> SimpleStorageManager::readFile(std::ifstream& fs) {
     return data;
 }
 
-void SimpleStorageManager::readDeviceAuthInfo(LoginManager&, DeviceAuth& deviceAuth) {
+std::vector<BaseAccountInfo> SimpleStorageManager::getAccounts() {
+    std::string accountsPath = this->basePath + "accounts/";
+    mkdir(accountsPath.c_str(), 0700);
+    DIR* dir = opendir(accountsPath.c_str());
+    struct dirent* de;
+    std::vector<BaseAccountInfo> ret;
+    while ((de = readdir(dir)) != nullptr) {
+        size_t d_name_len = strlen(de->d_name);
+        if (d_name_len < 8 + 4 || memcmp("account_", de->d_name, 8) || memcmp(".xml", de->d_name + d_name_len - 4, 4))
+            continue;
+        auto account = readAccount(accountsPath + de->d_name);
+        ret.push_back(BaseAccountInfo(account->getUsername(), account->getCID()));
+    }
+    closedir(dir);
+    return ret;
+}
+
+void SimpleStorageManager::readDeviceAuthInfo(DeviceAuth& deviceAuth) {
     std::ifstream fs (getDeviceAuthInfoPath());
     if (!fs)
         return;
@@ -76,7 +82,7 @@ void SimpleStorageManager::readDeviceAuthInfo(LoginManager&, DeviceAuth& deviceA
         deviceAuth.token = token_pointer_cast<LegacyToken>(Token::fromXml(*token));
 }
 
-void SimpleStorageManager::onDeviceAuthChanged(LoginManager&, DeviceAuth& deviceAuth) {
+void SimpleStorageManager::saveDeviceAuthInfo(DeviceAuth& deviceAuth) {
     rapidxml::xml_document<char> doc;
     auto root = doc.allocate_node(node_element, "MsaDeviceAuthInfo");
     doc.append_node(root);
@@ -96,8 +102,8 @@ void SimpleStorageManager::onDeviceAuthChanged(LoginManager&, DeviceAuth& device
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
-std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::string const& path) {
-    std::ifstream fs (path);
+std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
+    std::ifstream fs (getAccountPath(cid));
     if (!fs)
         throw std::runtime_error("Failed to open account file for reading");
     auto fd = readFile(fs);
@@ -107,7 +113,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::string const
     auto& root = XMLUtils::getRequiredChild(doc, "MsaAccount");
     if (strcmp(XMLUtils::getAttribute(root, "version", ""), "1"))
         throw std::runtime_error("Invalid version");
-    std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
+    std::string cidXml = XMLUtils::getRequiredChildValue(root, "CID");
     std::string username = XMLUtils::getRequiredChildValue(root, "Username");
     auto daTokenNode = root.first_node("Token");
     std::shared_ptr<LegacyToken> daToken;
@@ -118,10 +124,10 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountInfo(std::string const
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope(), token});
     }
-    return std::shared_ptr<Account>(new Account(username, cid, daToken, cache));
+    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, cache));
 }
 
-void SimpleStorageManager::saveAccountInfo(Account const& account) {
+void SimpleStorageManager::saveAccount(Account const& account) {
     rapidxml::xml_document<char> doc;
     auto root = doc.allocate_node(node_element, "MsaAccount");
     doc.append_node(root);
@@ -147,17 +153,6 @@ void SimpleStorageManager::saveAccountInfo(Account const& account) {
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
-void SimpleStorageManager::addAccount(std::shared_ptr<Account> account) {
-    accounts.insert({account.get(), account});
-    saveAccountInfo(*account);
-}
-
-void SimpleStorageManager::removeAccount(std::shared_ptr<Account> account) {
-    accounts.erase(account.get());
-    remove(getAccountPath(*account).c_str());
-}
-
-void SimpleStorageManager::onAccountTokenListChanged(LoginManager& manager, Account& account) {
-    if (accounts.count(&account) > 0)
-        saveAccountInfo(account);
+void SimpleStorageManager::removeAccount(Account& account) {
+    remove(getAccountPath(account).c_str());
 }

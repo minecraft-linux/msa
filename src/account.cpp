@@ -5,9 +5,9 @@
 
 using namespace msa;
 
-Account::Account(std::string const &username, std::string const &cid, std::shared_ptr<LegacyToken> daToken,
+Account::Account(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken,
                  std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache)
-        : username(username), cid(cid), daToken(daToken), cachedTokens(cache) {
+        : BaseAccountInfo(std::move(username), std::move(cid)), daToken(daToken), cachedTokens(cache) {
     //
 }
 
@@ -24,15 +24,15 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
         requestScopes.push_back(scope);
     }
     std::vector<TokenResponse> resp = LegacyNetwork::requestTokens(daToken, loginManager.requestDeviceAuth().token, scopes);
-    bool hasNewTokens = false;
+    std::vector<Token*> newTokens;
     for (TokenResponse& token : resp) {
         if (!token.hasError()) {
             cachedTokens[token.getSecurityScope()] = token.getToken();
-            hasNewTokens = true;
+            newTokens.push_back(token.getToken().get());
         }
         ret[token.getSecurityScope()] = token;
     }
-    if (hasNewTokens && loginManager.getStorageManager())
-        loginManager.getStorageManager()->onAccountTokenListChanged(loginManager, *this);
+    if (newTokens.size() > 0 && loginManager.getStorageManager())
+        loginManager.getStorageManager()->saveAccount(*this);
     return ret;
 }

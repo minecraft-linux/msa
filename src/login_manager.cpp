@@ -8,20 +8,20 @@ using namespace msa;
 
 DeviceAuth const& LoginManager::requestDeviceAuth() {
     if (!hasReadDeviceAuth && storageManager) {
-        storageManager->readDeviceAuthInfo(*this, deviceAuth);
+        storageManager->readDeviceAuthInfo(deviceAuth);
         hasReadDeviceAuth = true;
     }
     if (deviceAuth.membername.empty()) {
         deviceAuth = DeviceAuth::generateRandom();
         if (storageManager)
-            storageManager->onDeviceAuthChanged(*this, deviceAuth);
+            storageManager->saveDeviceAuthInfo(deviceAuth);
     }
     if (deviceAuth.puid.empty()) {
         network::DeviceAddRequest request (deviceAuth.membername, deviceAuth.password);
         auto response = request.send();
         deviceAuth.puid = response.puid;
         if (storageManager)
-            storageManager->onDeviceAuthChanged(*this, deviceAuth);
+            storageManager->saveDeviceAuthInfo(deviceAuth);
     }
     if (!deviceAuth.token) {
         network::DeviceAuthenticateRequest request (deviceAuth.membername, deviceAuth.password);
@@ -30,7 +30,7 @@ DeviceAuth const& LoginManager::requestDeviceAuth() {
         if (!deviceAuth.token)
             throw std::runtime_error("Failed to authenticate device");
         if (storageManager)
-            storageManager->onDeviceAuthChanged(*this, deviceAuth);
+            storageManager->saveDeviceAuthInfo(deviceAuth);
     }
     return deviceAuth;
 }
