@@ -119,12 +119,12 @@ std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& ci
     std::shared_ptr<LegacyToken> daToken;
     if (daTokenNode)
         daToken = token_pointer_cast<LegacyToken>(Token::fromXml(*daTokenNode));
-    std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache;
+    /*std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache;
     for (auto it = root.first_node("CachedToken"); it != nullptr; it = it->next_sibling("CachedToken")) {
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope(), token});
-    }
-    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, cache));
+    }*/
+    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, nullptr));
 }
 
 void SimpleStorageManager::saveAccount(Account const& account) {
@@ -140,12 +140,12 @@ void SimpleStorageManager::saveAccount(Account const& account) {
         root->append_node(tokenNode);
         daToken->toXml(*tokenNode);
     }
-    auto& cachedTokens = account.getCachedTokens();
+    /*auto& cachedTokens = account.getCachedTokens();
     for (auto const& t : cachedTokens) {
         auto tokenNode = doc.allocate_node(node_element, "CachedToken");
         root->append_node(tokenNode);
         t.second->toXml(*tokenNode);
-    }
+    }*/
 
     std::ofstream fs(getAccountPath(account));
     if (!fs)

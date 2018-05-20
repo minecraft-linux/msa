@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include "scope.h"
+#include "token_cache.h"
 
 namespace msa {
 
@@ -34,19 +35,19 @@ class Account : public BaseAccountInfo {
 private:
 
     std::shared_ptr<LegacyToken> daToken;
-
-    std::unordered_map<SecurityScope, std::shared_ptr<Token>> cachedTokens;
+    std::shared_ptr<TokenCache> tokenCache;
 
 public:
 
     Account(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken,
-            std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache = {});
+            std::shared_ptr<TokenCache> cache);
 
     std::unordered_map<SecurityScope, TokenResponse> requestTokens(LoginManager& loginManager,
                                                                    std::vector<SecurityScope> const& scopes);
 
     std::shared_ptr<LegacyToken> getDaToken() const { return daToken; }
-    std::unordered_map<SecurityScope, std::shared_ptr<Token>> const& getCachedTokens() const { return cachedTokens; }
+
+    std::shared_ptr<TokenCache> getCache() const { return tokenCache; }
 
 };
 
