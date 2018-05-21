@@ -15,7 +15,7 @@ using namespace msa;
 using namespace rapidxml;
 
 SimpleStorageManager::SimpleStorageManager(std::string const& basePath) {
-    if (basePath.length() > 0 || basePath[basePath.length() - 1] == '/')
+    if (basePath.length() == 0 || basePath[basePath.length() - 1] == '/')
         this->basePath = basePath;
     else
         this->basePath = basePath + "/";
