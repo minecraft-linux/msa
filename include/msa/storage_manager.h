@@ -20,6 +20,7 @@ public:
     virtual void saveDeviceAuthInfo(DeviceAuth& deviceAuth) {}
 
     virtual std::vector<BaseAccountInfo> getAccounts() { return {}; }
+    virtual std::shared_ptr<TokenCache> createTokenCache(std::string const& cid) { return std::shared_ptr<TokenCache>(); }
     virtual std::shared_ptr<Account> readAccount(std::string const& cid) { return std::shared_ptr<Account>(); }
     virtual void saveAccount(Account const& account) {}
     virtual void removeAccount(Account& account) {}

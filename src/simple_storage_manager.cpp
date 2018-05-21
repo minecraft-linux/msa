@@ -103,6 +103,11 @@ void SimpleStorageManager::saveDeviceAuthInfo(DeviceAuth& deviceAuth) {
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
+std::shared_ptr<TokenCache> SimpleStorageManager::createTokenCache(std::string const& cid) {
+    return std::shared_ptr<TokenCache>(new SimpleTokenCache(
+            std::bind(&SimpleStorageManager::saveAccount, this, std::placeholders::_1)));
+}
+
 std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
     std::ifstream fs (getAccountPath(cid));
     if (!fs)
@@ -125,9 +130,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& ci
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope(), token});
     }
-    std::shared_ptr<TokenCache> tokenCache(new SimpleTokenCache(
-            std::bind(&SimpleStorageManager::saveAccount, this, std::placeholders::_1)));
-    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, tokenCache));
+    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, createTokenCache(cid)));
 }
 
 void SimpleStorageManager::saveAccount(Account const& account) {
