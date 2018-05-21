@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <memory>
 #include <unordered_map>
 
@@ -9,6 +10,7 @@ namespace msa {
 class Account;
 class StorageManager;
 class LegacyToken;
+class BaseAccountInfo;
 
 class AccountManager {
 
@@ -20,6 +22,8 @@ private:
 
 public:
     AccountManager(StorageManager& storageManager) : storageManager(storageManager) {}
+
+    std::vector<BaseAccountInfo> getAccounts();
 
     std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
 

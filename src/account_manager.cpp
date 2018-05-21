@@ -16,6 +16,10 @@ std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::s
     return account;
 }
 
+std::vector<BaseAccountInfo> AccountManager::getAccounts() {
+    return storageManager.getAccounts();
+}
+
 void AccountManager::addAccount(std::shared_ptr<Account> account) {
     if (!accounts.insert({account->getCID(), account}).second)
         throw std::runtime_error("Account with this CID is already added");
