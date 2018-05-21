@@ -8,6 +8,7 @@ namespace msa {
 
 class Account;
 class StorageManager;
+class LegacyToken;
 
 class AccountManager {
 
@@ -15,10 +16,12 @@ private:
     StorageManager& storageManager;
     std::unordered_map<std::string, std::shared_ptr<Account>> accounts;
 
+    void addAccount(std::shared_ptr<Account> account);
+
 public:
     AccountManager(StorageManager& storageManager) : storageManager(storageManager) {}
 
-    void addAccount(std::shared_ptr<Account> account);
+    std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
 
     void removeAccount(Account& account);
 

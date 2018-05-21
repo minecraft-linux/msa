@@ -4,9 +4,21 @@
 
 using namespace msa;
 
+std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::string cid,
+                                                    std::shared_ptr<LegacyToken> daToken) {
+    if (accounts.count(cid) > 0)
+        throw std::runtime_error("Account with this CID is already added");
+    auto tokenCache = storageManager.createTokenCache(cid);
+    std::shared_ptr<Account> account(new Account(std::move(username), std::move(cid), std::move(daToken),
+                                                 tokenCache));
+    addAccount(account);
+    storageManager.saveAccount(*account);
+    return account;
+}
+
 void AccountManager::addAccount(std::shared_ptr<Account> account) {
     if (!accounts.insert({account->getCID(), account}).second)
-        throw std::runtime_error("Account with this CID ia already added");
+        throw std::runtime_error("Account with this CID is already added");
 }
 
 void AccountManager::removeAccount(Account& account) {
@@ -16,6 +28,7 @@ void AccountManager::removeAccount(Account& account) {
     if (it->second.get() != &account)
         throw std::runtime_error("An account with a CID of the same value as the specified account does exist, "
                                          "but is not the specified instance");
+    storageManager.removeAccount(account);
     accounts.erase(it);
 }
 
