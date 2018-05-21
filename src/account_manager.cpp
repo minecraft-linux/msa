@@ -1,5 +1,6 @@
 #include <msa/account_manager.h>
 #include <msa/account.h>
+#include <msa/storage_manager.h>
 
 using namespace msa;
 
@@ -18,9 +19,17 @@ void AccountManager::removeAccount(Account& account) {
     accounts.erase(it);
 }
 
-std::shared_ptr<Account> AccountManager::findAccount(std::string const& cid) const {
+std::shared_ptr<Account> AccountManager::findAccount(std::string const& cid) {
     auto it = accounts.find(cid);
-    if (it == accounts.end())
-        return std::shared_ptr<Account>();
-    return it->second;
+    if (it != accounts.end())
+        return it->second;
+    try {
+        auto account = storageManager.readAccount(cid);
+        if (account) {
+            addAccount(account);
+            return account;
+        }
+    } catch (std::exception& e) {
+    }
+    return std::shared_ptr<Account>();
 }
