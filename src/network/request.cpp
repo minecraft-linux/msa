@@ -38,7 +38,11 @@ std::string RequestBase::sendInternal() const {
         rapidxml::print_to_stream(bodyStream, doc, rapidxml::print_no_indenting);
         body = bodyStream.str();
     }
+#ifdef MSA_LOG_NETWORK
     Log::trace("MSANetwork", "Send %s: %s", url.c_str(), body.c_str());
+#else
+    Log::trace("MSANetwork", "Sending request to: %s", url.c_str());
+#endif
 
     CURL* curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -55,6 +59,10 @@ std::string RequestBase::sendInternal() const {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_stringstream_write_func);
     curl_easy_perform(curl);
+#ifdef MSA_LOG_NETWORK
     Log::trace("MSANetwork", "Reply: %s", output.str().c_str());
+#else
+    Log::trace("MSANetwork", "Request complete: %s", url.c_str());
+#endif
     return output.str();
 }

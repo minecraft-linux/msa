@@ -54,7 +54,6 @@ rapidxml::xml_node<char>* XMLSignContext::createSignature(LegacyToken& daToken, 
     signature->append_node(signedInfo);
 
     std::string signedInfoStr = XMLUtils::printXmlToString(*signedInfo, print_no_indenting | print_no_empty_tags);
-    printf("SignedInfo: %s\n", signedInfoStr.c_str());
     std::string sigValue = CryptoUtils::sign(signedInfoStr, daToken.getBinarySecret(), "WS-SecureConversationWS-SecureConversation", getNonce());
     signature->append_node(XMLUtils::allocateNodeCopyValue(doc, "SignatureValue", sigValue));
 

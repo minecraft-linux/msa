@@ -173,8 +173,9 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
         auto& cipherData = XMLUtils::getRequiredChild(*encryptedData, "CipherData");
         std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
         std::string decryptedBody = CryptoUtils::decryptAES256cbc(data, key);
+#ifdef MSA_LOG_NETWORK
         Log::trace("SecurityTokenRequest", "Decrypted body: %s", decryptedBody.c_str());
-        printf("%s\n", decryptedBody.c_str());
+#endif
 
         rapidxml::xml_document<char> ddoc;
         ddoc.parse<0>(&decryptedBody[0]);
