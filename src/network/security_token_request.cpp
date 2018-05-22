@@ -174,6 +174,7 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
         std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
         std::string decryptedBody = CryptoUtils::decryptAES256cbc(data, key);
         Log::trace("SecurityTokenRequest", "Decrypted body: %s", decryptedBody.c_str());
+        printf("%s\n", decryptedBody.c_str());
 
         rapidxml::xml_document<char> ddoc;
         ddoc.parse<0>(&decryptedBody[0]);
@@ -184,10 +185,20 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
 
 SecurityTokenResponse SecurityTokenRequestBase::handleResponseBody(rapidxml::xml_node<char> const& body) const {
     auto singleToken = body.first_node("wst:RequestSecurityTokenResponse");
-    if (singleToken != nullptr) {
+    if (singleToken != nullptr)
         return {{TokenResponse::fromXml(*singleToken)}};
+
+    auto tokenCollection = body.first_node("wst:RequestSecurityTokenResponseCollection");
+    if (tokenCollection != nullptr) {
+        std::vector<TokenResponse> ret;
+        for (auto it = tokenCollection->first_node("wst:RequestSecurityTokenResponse"); it != nullptr;
+                it = it->next_sibling("wst:RequestSecurityTokenResponse")) {
+            ret.push_back(TokenResponse::fromXml(*it));
+        }
+        return {std::move(ret)};
     }
-    return {};
+
+    throw std::runtime_error("Invalid body: no token response");
 }
 
 std::string SecurityTokenRequestBase::findEncKeyNonce(rapidxml::xml_node<char> const& envelope) const {
