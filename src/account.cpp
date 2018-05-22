@@ -22,7 +22,7 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
         cachedTokens = tokenCache->getTokensFromCache(*this, scopes);
     for (SecurityScope const& scope : scopes) {
         if (cachedTokens.count(scope) > 0) {
-            ret[scope] = TokenResponse(scope, cachedTokens[{scope.address}]);
+            ret[scope] = TokenResponse(scope, cachedTokens.at(scope));
             continue;
         }
         requestScopes.push_back(scope);

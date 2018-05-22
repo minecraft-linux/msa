@@ -27,21 +27,21 @@ public:
 
 template <>
 inline CompactToken& token_cast(Token& t) {
-    if (t.getType() != TokenType::Legacy)
+    if (t.getType() != TokenType::Compact)
         throw std::bad_cast();
     return (CompactToken&) t;
 }
 
 template <>
 inline std::shared_ptr<CompactToken> token_pointer_cast(std::shared_ptr<Token> t) {
-    if (t->getType() != TokenType::Legacy)
+    if (t->getType() != TokenType::Compact)
         throw std::bad_cast();
     return std::static_pointer_cast<CompactToken>(t);
 }
 
 template <>
 inline CompactToken const& token_cast(Token const& t) {
-    if (t.getType() != TokenType::Legacy)
+    if (t.getType() != TokenType::Compact)
         throw std::bad_cast();
     return (CompactToken const&) t;
 }
