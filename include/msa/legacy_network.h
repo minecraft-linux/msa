@@ -40,10 +40,10 @@ private:
     static TokenResponse parseTokenResponse(rapidxml::xml_node<char>* node);
 
     static std::shared_ptr<LegacyToken> parseLegacyToken(rapidxml::xml_node<char>* node, SecurityScope scope,
-                                                         Token::ExpireTime expire);
+                                                         Token::TimePoint expire);
 
     static std::shared_ptr<CompactToken> parseCompactToken(rapidxml::xml_node<char>* node, SecurityScope scope,
-                                                           Token::ExpireTime expire);
+                                                           Token::TimePoint expire);
 
     static std::shared_ptr<TokenErrorInfo> parseErrorInfo(rapidxml::xml_node<char>* node);
 

@@ -261,7 +261,7 @@ TokenResponse LegacyNetwork::parseTokenResponse(rapidxml::xml_node<char>* node) 
         return TokenResponse(scope, parseErrorInfo(psf));
     }
 
-    Token::ExpireTime expire;
+    Token::TimePoint expire;
     rapidxml::xml_node<char>* lifetime = node->first_node("wst:Lifetime");
     if (lifetime != nullptr) {
         rapidxml::xml_node<char>* expires = node->first_node("wsu:Expires");
@@ -279,7 +279,7 @@ TokenResponse LegacyNetwork::parseTokenResponse(rapidxml::xml_node<char>* node) 
 }
 
 std::shared_ptr<LegacyToken> LegacyNetwork::parseLegacyToken(rapidxml::xml_node<char>* node, SecurityScope scope,
-                                                             Token::ExpireTime expire) {
+                                                             Token::TimePoint expire) {
     rapidxml::xml_node<char>* requested = node->first_node("wst:RequestedSecurityToken");
     if (requested == nullptr)
         throw std::runtime_error("Failed to find wst:RequestedSecurityToken");
@@ -295,18 +295,19 @@ std::shared_ptr<LegacyToken> LegacyNetwork::parseLegacyToken(rapidxml::xml_node<
 
     std::stringstream ss;
     rapidxml::print_to_stream(ss, *data, rapidxml::print_no_indenting);
-    return std::shared_ptr<LegacyToken>(new LegacyToken(scope, expire, ss.str(), Base64::decode(binarySecret->value())));
+    return std::shared_ptr<LegacyToken>(new LegacyToken(scope, Token::TimePoint(), expire, ss.str(),
+                                                        Base64::decode(binarySecret->value())));
 }
 
 std::shared_ptr<CompactToken> LegacyNetwork::parseCompactToken(rapidxml::xml_node<char>* node, SecurityScope scope,
-                                                               Token::ExpireTime expire) {
+                                                               Token::TimePoint expire) {
     rapidxml::xml_node<char>* requested = node->first_node("wst:RequestedSecurityToken");
     if (requested == nullptr)
         throw std::runtime_error("Failed to find wst:RequestedSecurityToken");
     rapidxml::xml_node<char>* data = requested->first_node("wsse:BinarySecurityToken");
     if (data == nullptr)
         throw std::runtime_error("Failed to find wsse:BinarySecurityToken");
-    return std::shared_ptr<CompactToken>(new CompactToken(scope, expire, data->value()));
+    return std::shared_ptr<CompactToken>(new CompactToken(scope, Token::TimePoint(), expire, data->value()));
 }
 
 
@@ -409,7 +410,7 @@ std::shared_ptr<LegacyToken> LegacyNetwork::authenticateDevice(std::string const
     rapidxml::xml_node<char>* token = body->first_node("wst:RequestSecurityTokenResponse");
     if (token == nullptr)
         throw std::runtime_error("Failed to find the token");
-    return parseLegacyToken(token, SecurityScope(), Token::ExpireTime());
+    return parseLegacyToken(token, SecurityScope(), Token::TimePoint());
 }
 
 std::vector<TokenResponse> LegacyNetwork::requestTokens(std::shared_ptr<LegacyToken> daToken,

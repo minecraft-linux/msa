@@ -16,18 +16,19 @@ enum class TokenType {
 class Token {
 
 public:
-    using ExpireTime = std::chrono::system_clock::time_point;
+    using TimePoint = std::chrono::system_clock::time_point;
 
 protected:
     SecurityScope securityScope;
     bool hasLifetimeInfo = false;
-    ExpireTime createTime, expireTime;
+    TimePoint createTime, expireTime;
 
     Token(rapidxml::xml_node<char> const& data);
 
 public:
     Token() { }
-    Token(SecurityScope const& scope, ExpireTime expire) : securityScope(scope), expireTime(expire) { }
+    Token(SecurityScope const& scope, TimePoint create, TimePoint expire) : securityScope(scope), createTime(create),
+                                                                            expireTime(expire) { }
 
     virtual ~Token() = default;
 
