@@ -4,6 +4,7 @@
 #include <cstring>
 #include <base64.h>
 #include <msa/network/crypto_utils.h>
+#include <log.h>
 
 using namespace msa::network;
 using namespace rapidxml;
@@ -172,9 +173,16 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
         auto& cipherData = XMLUtils::getRequiredChild(*encryptedData, "CipherData");
         std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
         std::string decryptedBody = CryptoUtils::decryptAES256cbc(data, key);
-        printf("Decrypted body = %s\n", decryptedBody.c_str());
-    }
+        Log::trace("SecurityTokenRequest", "Decrypted body: %s", decryptedBody.c_str());
 
+        rapidxml::xml_document<char> ddoc;
+        ddoc.parse<0>(&decryptedBody[0]);
+        return handleResponseBody(ddoc);
+    }
+    return handleResponseBody(body);
+}
+
+SecurityTokenResponse SecurityTokenRequestBase::handleResponseBody(rapidxml::xml_node<char> const& body) const {
     auto singleToken = body.first_node("wst:RequestSecurityTokenResponse");
     if (singleToken != nullptr) {
         return {{TokenResponse::fromXml(*singleToken)}};
