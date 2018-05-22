@@ -39,10 +39,11 @@ std::vector<char> SimpleStorageManager::readFile(std::ifstream& fs) {
     std::vector<char> data;
 
     fs.seekg(0, std::ios_base::end);
-    data.resize((size_t) fs.tellg());
+    data.resize((size_t) fs.tellg() + 1);
 
     fs.seekg(0, std::ios_base::beg);
-    fs.read(&data[0], data.size());
+    fs.read(&data[0], data.size() - 1);
+    data[data.size() - 1] = '\0';
 
     return data;
 }
@@ -69,6 +70,7 @@ void SimpleStorageManager::readDeviceAuthInfo(DeviceAuth& deviceAuth) {
     if (!fs)
         return;
     auto fd = readFile(fs);
+    fs.close();
     rapidxml::xml_document<char> doc;
     doc.parse<0>(fd.data());
 
@@ -113,6 +115,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
     if (!fs)
         throw std::runtime_error("Failed to open account file for reading");
     auto fd = readFile(fs);
+    fs.close();
     rapidxml::xml_document<char> doc;
     doc.parse<0>(fd.data());
 
@@ -121,7 +124,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
         throw std::runtime_error("Invalid version");
     std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
     std::string username = XMLUtils::getRequiredChildValue(root, "Username");
-    auto daTokenNode = root.first_node("Token");
+    auto daTokenNode = root.first_node("DaToken");
     std::shared_ptr<LegacyToken> daToken;
     if (daTokenNode)
         daToken = token_pointer_cast<LegacyToken>(Token::fromXml(*daTokenNode));
