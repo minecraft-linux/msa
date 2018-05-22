@@ -57,7 +57,7 @@ std::vector<BaseAccountInfo> SimpleStorageManager::getAccounts() {
         size_t d_name_len = strlen(de->d_name);
         if (d_name_len < 8 + 4 || memcmp("account_", de->d_name, 8) || memcmp(".xml", de->d_name + d_name_len - 4, 4))
             continue;
-        auto account = readAccount(accountsPath + de->d_name);
+        auto account = readAccountFile(accountsPath + de->d_name);
         ret.push_back(BaseAccountInfo(account->getUsername(), account->getCID()));
     }
     closedir(dir);
@@ -108,8 +108,8 @@ std::shared_ptr<TokenCache> SimpleStorageManager::createTokenCache(std::string c
             std::bind(&SimpleStorageManager::saveAccount, this, std::placeholders::_1)));
 }
 
-std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
-    std::ifstream fs (getAccountPath(cid));
+std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const& path) {
+    std::ifstream fs (path);
     if (!fs)
         throw std::runtime_error("Failed to open account file for reading");
     auto fd = readFile(fs);
@@ -119,7 +119,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& ci
     auto& root = XMLUtils::getRequiredChild(doc, "MsaAccount");
     if (strcmp(XMLUtils::getAttribute(root, "version", ""), "1"))
         throw std::runtime_error("Invalid version");
-    std::string cidXml = XMLUtils::getRequiredChildValue(root, "CID");
+    std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
     std::string username = XMLUtils::getRequiredChildValue(root, "Username");
     auto daTokenNode = root.first_node("Token");
     std::shared_ptr<LegacyToken> daToken;
@@ -130,7 +130,11 @@ std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& ci
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope(), token});
     }
-    return std::shared_ptr<Account>(new Account(username, cidXml, daToken, createTokenCache(cid)));
+    return std::shared_ptr<Account>(new Account(username, cid, daToken, createTokenCache(cid)));
+}
+
+std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
+    return readAccountFile(getAccountPath(cid));
 }
 
 void SimpleStorageManager::saveAccount(Account const& account) {
