@@ -53,7 +53,8 @@ rapidxml::xml_node<char>* XMLSignContext::createSignature(LegacyToken& daToken, 
     signature->append_attribute(doc.allocate_attribute("xmlns", NAMESPACE_XMLDSIG));
     signature->append_node(signedInfo);
 
-    std::string signedInfoStr = XMLUtils::printXmlToString(*signature, print_no_indenting);
+    std::string signedInfoStr = XMLUtils::printXmlToString(*signedInfo, print_no_indenting | print_no_empty_tags);
+    printf("SignedInfo: %s\n", signedInfoStr.c_str());
     std::string sigValue = CryptoUtils::sign(signedInfoStr, daToken.getBinarySecret(), "WS-SecureConversationWS-SecureConversation", getNonce());
     signature->append_node(XMLUtils::allocateNodeCopyValue(doc, "SignatureValue", sigValue));
 
@@ -70,7 +71,8 @@ rapidxml::xml_node<char>* XMLSignContext::createSignature(LegacyToken& daToken, 
 
 rapidxml::xml_node<char>* XMLSignContext::buildSignatureNode(rapidxml::xml_document<char>& doc,
                                                              rapidxml::xml_node<char>& ofNode) {
-    std::string hash = CryptoUtils::sha256(XMLUtils::printXmlToString(ofNode, print_no_indenting));
+    std::string hash = CryptoUtils::sha256(XMLUtils::printXmlToString(ofNode,
+                                                                      print_no_indenting | print_no_empty_tags));
 
     auto refNode = doc.allocate_node(node_element, "Reference");
     auto ofNodeIdAttr = ofNode.first_attribute("Id");
