@@ -26,6 +26,8 @@ public:
     void readDeviceAuthInfo(DeviceAuth& deviceAuth) override;
     void saveDeviceAuthInfo(DeviceAuth& deviceAuth) override;
 
+    std::shared_ptr<TokenCache> createTokenCache(std::string const& cid,
+                                                 std::unordered_map<std::string, std::shared_ptr<Token>> cache);
     std::shared_ptr<TokenCache> createTokenCache(std::string const& cid) override;
     std::shared_ptr<Account> readAccountFile(std::string const& path);
     std::shared_ptr<Account> readAccount(std::string const& cid) override;

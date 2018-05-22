@@ -15,7 +15,8 @@ private:
     ChangeCallback cb;
 
 public:
-    SimpleTokenCache(ChangeCallback cb) : cb(cb) {}
+    SimpleTokenCache(ChangeCallback cb, std::unordered_map<std::string, std::shared_ptr<Token>> cache = {}) :
+            cb(cb), cache(cache) {}
 
     void onTokensReceived(Account& account, std::vector<std::shared_ptr<Token>> const& tokens) override;
 

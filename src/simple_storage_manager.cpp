@@ -105,9 +105,14 @@ void SimpleStorageManager::saveDeviceAuthInfo(DeviceAuth& deviceAuth) {
     rapidxml::print_to_stream(fs, doc, rapidxml::print_no_indenting);
 }
 
-std::shared_ptr<TokenCache> SimpleStorageManager::createTokenCache(std::string const& cid) {
+std::shared_ptr<TokenCache> SimpleStorageManager::createTokenCache(
+        std::string const& cid, std::unordered_map<std::string, std::shared_ptr<Token>> cache) {
     return std::shared_ptr<TokenCache>(new SimpleTokenCache(
-            std::bind(&SimpleStorageManager::saveAccount, this, std::placeholders::_1)));
+            std::bind(&SimpleStorageManager::saveAccount, this, std::placeholders::_1), cache));
+}
+
+std::shared_ptr<TokenCache> SimpleStorageManager::createTokenCache(std::string const& cid) {
+    return createTokenCache(cid, {});
 }
 
 std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const& path) {
@@ -128,12 +133,12 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
     std::shared_ptr<LegacyToken> daToken;
     if (daTokenNode)
         daToken = token_pointer_cast<LegacyToken>(Token::fromXml(*daTokenNode));
-    std::unordered_map<SecurityScope, std::shared_ptr<Token>> cache;
+    std::unordered_map<std::string, std::shared_ptr<Token>> cache;
     for (auto it = root.first_node("CachedToken"); it != nullptr; it = it->next_sibling("CachedToken")) {
         auto token = Token::fromXml(*it);
-        cache.insert({token->getSecurityScope(), token});
+        cache.insert({token->getSecurityScope().address, token});
     }
-    return std::shared_ptr<Account>(new Account(username, cid, daToken, createTokenCache(cid)));
+    return std::shared_ptr<Account>(new Account(username, cid, daToken, createTokenCache(cid, std::move(cache))));
 }
 
 std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
