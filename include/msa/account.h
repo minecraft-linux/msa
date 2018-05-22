@@ -43,7 +43,8 @@ public:
             std::shared_ptr<TokenCache> cache);
 
     std::unordered_map<SecurityScope, TokenResponse> requestTokens(LoginManager& loginManager,
-                                                                   std::vector<SecurityScope> const& scopes);
+                                                                   std::vector<SecurityScope> const& scopes,
+                                                                   std::string const& clientAppUri = std::string());
 
     std::shared_ptr<LegacyToken> getDaToken() const { return daToken; }
 
