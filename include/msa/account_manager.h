@@ -12,6 +12,13 @@ class StorageManager;
 class LegacyToken;
 class BaseAccountInfo;
 
+struct NoSuchAccountException : public std::exception {
+    virtual const char* what() const noexcept { return "No account found"; }
+};
+struct AccountAlreadyExistsException : public std::exception {
+    virtual const char* what() const noexcept { return "Account with this CID already exists"; }
+};
+
 class AccountManager {
 
 private:
