@@ -37,6 +37,10 @@ public:
 
     SecurityScope const& getSecurityScope() const { return securityScope; }
 
+    TimePoint getCreatedTime() const { return createTime; }
+
+    TimePoint getExpiresTime() const { return expireTime; }
+
     bool isExpired() const { return network::ServerTime::getServerTime() >= expireTime; }
 
     virtual void toXml(rapidxml::xml_node<char>& node) const;
