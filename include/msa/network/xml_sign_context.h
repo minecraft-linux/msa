@@ -25,6 +25,8 @@ public:
 
     std::string const& getNonce();
 
+    rapidxml::xml_node<char>* createNonceNode(rapidxml::xml_document<char>& doc);
+
     rapidxml::xml_node<char>* createSignature(LegacyToken& daToken, rapidxml::xml_document<char>& doc);
 
 };

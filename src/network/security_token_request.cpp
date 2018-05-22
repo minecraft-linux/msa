@@ -46,8 +46,10 @@ void SecurityTokenRequestBase::createBody(rapidxml::xml_document<char>& doc) con
     envelope->append_node(body);
 
     auto signKey = getSigingKey();
-    if (signKey != nullptr)
+    if (signKey != nullptr) {
+        header->first_node("wsse:Security")->append_node(signContext.createNonceNode(doc));
         header->first_node("wsse:Security")->append_node(signContext.createSignature(*signKey, doc));
+    }
 
     doc.append_node(envelope);
 }

@@ -17,6 +17,25 @@ std::string const& XMLSignContext::getNonce() {
     return nonce;
 }
 
+rapidxml::xml_node<char>* XMLSignContext::createNonceNode(rapidxml::xml_document<char>& doc) {
+    auto tokenNode = doc.allocate_node(node_element, "wssc:DerivedKeyToken");
+    tokenNode->append_attribute(doc.allocate_attribute("wsu:Id", "SignKey"));
+    tokenNode->append_attribute(doc.allocate_attribute("Algorithm", "urn:liveid:SP800-108CTR-HMAC-SHA256"));
+
+    auto ref = doc.allocate_node(node_element, "wsse:RequestedTokenReference");
+    auto refKeyId = doc.allocate_node(node_element, "wsse:KeyIdentifier");
+    refKeyId->append_attribute(doc.allocate_attribute("ValueType", "http://docs.oasis-open.org/wss/2004/XX/oasis-2004XX-wss-saml-token-profile-1.0#SAMLAssertionID"));
+    ref->append_node(refKeyId);
+    auto refRef = doc.allocate_node(node_element, "wsse:Reference");
+    refRef->append_attribute(doc.allocate_attribute("URI", ""));
+    ref->append_node(refRef);
+    tokenNode->append_node(ref);
+
+    tokenNode->append_node(XMLUtils::allocateNodeCopyValue(doc, "wssc:Nonce", Base64::encode(getNonce())));
+
+    return tokenNode;
+}
+
 rapidxml::xml_node<char>* XMLSignContext::createSignature(LegacyToken& daToken, rapidxml::xml_document<char>& doc) {
     auto signedInfo = doc.allocate_node(node_element, "SignedInfo");
     signedInfo->append_attribute(doc.allocate_attribute("xmlns", NAMESPACE_XMLDSIG));
