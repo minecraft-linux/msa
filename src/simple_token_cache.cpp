@@ -13,5 +13,10 @@ std::shared_ptr<Token> SimpleTokenCache::getTokenFromCache(Account& account, std
     auto it = cache.find(scopeAddress);
     if (it == cache.end())
         return std::shared_ptr<Token>();
+    if (it->second->isExpired()) {
+        cache.erase(it);
+        cb(account);
+        return std::shared_ptr<Token>();
+    }
     return it->second;
 }

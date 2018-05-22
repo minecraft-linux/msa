@@ -4,6 +4,7 @@
 #include <chrono>
 #include <memory>
 #include "scope.h"
+#include "network/server_time.h"
 
 namespace rapidxml { template <typename T> struct xml_node; }
 
@@ -36,7 +37,7 @@ public:
 
     SecurityScope const& getSecurityScope() const { return securityScope; }
 
-    bool isExpired() const { return false; } // TODO:
+    bool isExpired() const { return network::ServerTime::getServerTime() >= expireTime; }
 
     virtual void toXml(rapidxml::xml_node<char>& node) const;
 
