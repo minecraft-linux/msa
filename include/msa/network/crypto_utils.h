@@ -19,6 +19,8 @@ public:
 
     static std::string sha256(std::string const& data);
 
+    static std::string decryptAES256cbc(std::string const& data, std::string const& key);
+
 };
 
 }

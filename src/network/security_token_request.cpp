@@ -1,6 +1,9 @@
 #include <msa/network/security_token_request.h>
 #include <msa/network/server_time.h>
 #include <msa/xml_utils.h>
+#include <cstring>
+#include <base64.h>
+#include <msa/network/crypto_utils.h>
 
 using namespace msa::network;
 using namespace rapidxml;
@@ -160,9 +163,33 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
     auto& envelope = XMLUtils::getRequiredChild(doc, "S:Envelope");
     auto& body = XMLUtils::getRequiredChild(envelope, "S:Body");
 
+    auto encryptedData = body.first_node("EncryptedData");
+    LegacyToken* signKey;
+    if (encryptedData != nullptr && (signKey = getSigingKey()) != nullptr) {
+        std::string nonce = findEncKeyNonce(envelope);
+        std::string key = CryptoUtils::generateSharedKey(32, signKey->getBinarySecret(),
+                                                         "WS-SecureConversationWS-SecureConversation", nonce);
+        auto& cipherData = XMLUtils::getRequiredChild(*encryptedData, "CipherData");
+        std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
+        std::string decryptedBody = CryptoUtils::decryptAES256cbc(data, key);
+        printf("Decrypted body = %s\n", decryptedBody.c_str());
+    }
+
     auto singleToken = body.first_node("wst:RequestSecurityTokenResponse");
     if (singleToken != nullptr) {
         return {{TokenResponse::fromXml(*singleToken)}};
     }
     return {};
+}
+
+std::string SecurityTokenRequestBase::findEncKeyNonce(rapidxml::xml_node<char> const& envelope) const {
+    auto& header = XMLUtils::getRequiredChild(envelope, "S:Header");
+    auto& security = XMLUtils::getRequiredChild(header, "wsse:Security");
+    for (auto it = security.first_node("wssc:DerivedKeyToken"); it != nullptr;
+         it = it->next_sibling("wssc:DerivedKeyToken")) {
+        rapidxml::xml_attribute<char>* attr = it->first_attribute("wsu:Id");
+        if (attr != nullptr && strcmp(attr->value(), "EncKey") == 0)
+            return Base64::decode(XMLUtils::getRequiredChildValue(*it, "wssc:Nonce"));
+    }
+    return std::string();
 }

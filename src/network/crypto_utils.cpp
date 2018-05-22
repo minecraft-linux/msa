@@ -11,6 +11,8 @@
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <netinet/in.h>
+#include <stdexcept>
+#include "crypto_auto_helper.h"
 
 #endif
 
@@ -88,4 +90,38 @@ std::string CryptoUtils::sha256(std::string const& data) {
         hash.resize(hashLen);
 #endif
     return hash;
+}
+
+std::string CryptoUtils::decryptAES256cbc(std::string const& data, std::string const& key) {
+    std::string decryptedData;
+    decryptedData.resize(data.size());
+#ifdef __APPLE__
+    CCCryptorRefAuto cryptor;
+    if (CCCryptorCreate(kCCDecrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding, (unsigned char*) keyData.data(), kCCKeySizeAES256, data.data(), &cryptor.obj()) != kCCSuccess)
+        throw std::runtime_error("CCCryptorCreate failed");
+    size_t len = 0;
+    size_t tempLen;
+    if (CCCryptorUpdate(cryptor, (unsigned char*) &data[16], data.size() - 16, (unsigned char*) &decryptedData[0], decryptedData.size(), &tempLen) != kCCSuccess)
+        throw std::runtime_error("CCCryptorUpdate failed");
+    len += tempLen;
+    if (CCCryptorFinal(cryptor, (unsigned char*) &decryptedData[0], decryptedData.size(), &tempLen) != kCCSuccess)
+        throw std::runtime_error("CCCryptorFinal failed");
+    len += tempLen;
+    decryptedData.resize(len);
+#else
+    EvpCipherAuto ctx (EVP_CIPHER_CTX_new());
+    if (!EVP_DecryptInit(ctx, EVP_aes_256_cbc(), (unsigned char*) key.data(), (unsigned char*) &data[0]))
+        throw std::runtime_error("EVP_DecryptInit failed");
+    size_t len = 0;
+    int tempLen;
+    if (!EVP_DecryptUpdate(ctx, (unsigned char*) &decryptedData[0], &tempLen, (unsigned char*) &data[16],
+                           (int) (data.size() - 16)))
+        throw std::runtime_error("EVP_DecryptUpdate failed");
+    len += tempLen;
+    if (!EVP_DecryptFinal_ex(ctx, (unsigned char*) &decryptedData[len], &tempLen))
+        throw std::runtime_error("EVP_DecryptFinal failed");
+    len += tempLen;
+    decryptedData.resize(len);
+#endif
+    return decryptedData;
 }

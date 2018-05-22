@@ -65,6 +65,10 @@ protected:
 
     SecurityTokenResponse sendTokenRequestInternal() const;
 
+private:
+
+    std::string findEncKeyNonce(rapidxml::xml_node<char> const& envelope) const;
+
 public:
     SecurityTokenRequestBase();
 
