@@ -162,14 +162,40 @@ rapidxml::xml_node<char>& SecurityTokenRequestBase::buildMultipleTokenRequestEle
 
 SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_document<char> const& doc) const {
     auto& envelope = XMLUtils::getRequiredChild(doc, "S:Envelope");
+    auto& header = XMLUtils::getRequiredChild(envelope, "S:Header");
     auto& body = XMLUtils::getRequiredChild(envelope, "S:Body");
+    LegacyToken* signKey;
+
+    if (body.first_node("S:Fault") != nullptr && (signKey = getSigingKey()) != nullptr) {
+        std::string nonce = findEncKeyNonce(envelope);
+        std::string key = CryptoUtils::generateSharedKey(32, signKey->getBinarySecret(),
+                                                         "WS-SecureConversationWS-SecureConversation", nonce);
+
+        auto& epp = XMLUtils::getRequiredChild(header, "psf:EncryptedPP");
+        auto& encryptedData = XMLUtils::getRequiredChild(epp, "EncryptedData");
+
+        auto& cipherData = XMLUtils::getRequiredChild(encryptedData, "CipherData");
+        std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
+        std::string decryptedHeader = CryptoUtils::decryptAES256cbc(data, key);
+#ifdef MSA_LOG_NETWORK
+        Log::trace("SecurityTokenRequest", "Decrypted header: %s", decryptedHeader.c_str());
+#endif
+
+        rapidxml::xml_document<char> ddoc;
+        ddoc.parse<0>(&decryptedHeader[0]);
+
+        SecurityTokenResponse ret;
+        ret.error = std::make_shared<TokenErrorInfo>(TokenErrorInfo::fromXml(
+                XMLUtils::getRequiredChild(ddoc, "psf:pp")));
+        return ret;
+    }
 
     auto encryptedData = body.first_node("EncryptedData");
-    LegacyToken* signKey;
     if (encryptedData != nullptr && (signKey = getSigingKey()) != nullptr) {
         std::string nonce = findEncKeyNonce(envelope);
         std::string key = CryptoUtils::generateSharedKey(32, signKey->getBinarySecret(),
                                                          "WS-SecureConversationWS-SecureConversation", nonce);
+
         auto& cipherData = XMLUtils::getRequiredChild(*encryptedData, "CipherData");
         std::string data = Base64::decode(XMLUtils::getRequiredChildValue(cipherData, "CipherValue"));
         std::string decryptedBody = CryptoUtils::decryptAES256cbc(data, key);

@@ -61,6 +61,7 @@ std::string RequestBase::sendInternal() const {
     curl_easy_perform(curl);
 #ifdef MSA_LOG_NETWORK
     Log::trace("MSANetwork", "Reply: %s", output.str().c_str());
+    printf("%s\n", output.str().c_str());
 #else
     Log::trace("MSANetwork", "Request complete: %s", url.c_str());
 #endif

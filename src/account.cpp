@@ -30,10 +30,15 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
     if (requestScopes.size() == 0)
         return ret;
 
-    network::AccountTokenRequest req(daToken, loginManager.requestDeviceAuth().token, scopes);
+    network::AccountTokenRequest req(daToken, loginManager.requestDeviceAuth().token, requestScopes);
     req.clientAppUri = clientAppUri;
     auto resp = req.send();
     std::vector<std::shared_ptr<Token>> newTokens;
+    if (resp.error) {
+        for (SecurityScope const& scope : requestScopes)
+            ret[scope] = TokenResponse(scope, resp.error);
+        return ret;
+    }
     for (TokenResponse& token : resp.tokens) {
         if (!token.hasError()) {
             newTokens.push_back(token.getToken());

@@ -79,6 +79,7 @@ public:
 struct SecurityTokenResponse {
 
     std::vector<TokenResponse> tokens;
+    std::shared_ptr<TokenErrorInfo> error;
 
 };
 
