@@ -11,10 +11,9 @@
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <netinet/in.h>
-#include <stdexcept>
-#include "crypto_auto_helper.h"
-
 #endif
+
+#include "crypto_auto_helper.h"
 
 using namespace msa::network;
 
@@ -79,7 +78,7 @@ std::string CryptoUtils::sha256(std::string const& data) {
     std::string hash;
 #ifdef __APPLE__
     hash.resize(CC_SHA256_DIGEST_LENGTH);
-    CC_SHA256(text.data(), text.length(), (unsigned char*) &hash[0]);
+    CC_SHA256(data.data(), data.length(), (unsigned char*) &hash[0]);
 #else
     unsigned int hashLen = SHA256_DIGEST_LENGTH;
     hash.resize(hashLen);
@@ -97,7 +96,7 @@ std::string CryptoUtils::decryptAES256cbc(std::string const& data, std::string c
     decryptedData.resize(data.size());
 #ifdef __APPLE__
     CCCryptorRefAuto cryptor;
-    if (CCCryptorCreate(kCCDecrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding, (unsigned char*) keyData.data(), kCCKeySizeAES256, data.data(), &cryptor.obj()) != kCCSuccess)
+    if (CCCryptorCreate(kCCDecrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding, (unsigned char*) key.data(), kCCKeySizeAES256, data.data(), &cryptor.obj()) != kCCSuccess)
         throw std::runtime_error("CCCryptorCreate failed");
     size_t len = 0;
     size_t tempLen;

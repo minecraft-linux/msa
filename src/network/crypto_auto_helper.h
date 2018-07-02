@@ -13,10 +13,11 @@ private:
     CCCryptorRef ctx;
 
 public:
-    CCCryptorRefAuto(CCCryptorRef ctx) : ctx(ctx) {
+    CCCryptorRefAuto(CCCryptorRef ctx = nullptr) : ctx(ctx) {
     }
     ~CCCryptorRefAuto() {
-        CCCryptorRelease(ctx);
+        if (ctx != nullptr)
+            CCCryptorRelease(ctx);
     }
 
     CCCryptorRef& obj() {
