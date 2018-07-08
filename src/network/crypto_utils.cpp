@@ -104,7 +104,7 @@ std::string CryptoUtils::decryptAES256cbc(std::string const& data, std::string c
     if (CCCryptorUpdate(cryptor, (unsigned char*) &data[16], data.size() - 16, (unsigned char*) &decryptedData[0], decryptedData.size(), &tempLen) != kCCSuccess)
         throw std::runtime_error("CCCryptorUpdate failed");
     len += tempLen;
-    if (CCCryptorFinal(cryptor, (unsigned char*) &decryptedData[0], decryptedData.size(), &tempLen) != kCCSuccess)
+    if (CCCryptorFinal(cryptor, (unsigned char*) &decryptedData[len], decryptedData.size(), &tempLen) != kCCSuccess)
         throw std::runtime_error("CCCryptorFinal failed");
     len += tempLen;
     decryptedData.resize(len);
