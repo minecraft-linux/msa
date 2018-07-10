@@ -2,6 +2,7 @@
 #include <random>
 #include <cstring>
 #include <base64.h>
+#include <stdexcept>
 #ifdef __APPLE__
 #include <CommonCrypto/CommonCrypto.h>
 #include <CommonCrypto/CommonHMAC.h>
