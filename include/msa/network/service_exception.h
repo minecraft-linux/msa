@@ -24,9 +24,9 @@ public:
 
     static ServiceException fromResponse(rapidxml::xml_node<char> const& doc);
 
-    constexpr int code() const { return errorCode; }
+    inline int code() const { return errorCode; }
 
-    constexpr int subcode() const { return errorSubcode; }
+    inline int subcode() const { return errorSubcode; }
 
     const char* what() const noexcept override {
         return asString.c_str();
