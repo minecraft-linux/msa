@@ -2,6 +2,7 @@
 
 #include <msa/login_manager.h>
 #include <msa/network/account_token_request.h>
+#include <set>
 
 using namespace msa;
 
@@ -39,10 +40,16 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
             ret[scope] = TokenResponse(scope, resp.error);
         return ret;
     }
+    std::set<std::string> scopeAddresses;
+    for (SecurityScope const& s : scopes)
+        scopeAddresses.insert(s.address);
     for (TokenResponse& token : resp.tokens) {
-        if (!token.hasError()) {
+        if (!token.hasError())
             newTokens.push_back(token.getToken());
-        }
+        // It seems that the AccountTokenRequest also returns an unasked-for http://Passport.NET/tb token. Therefore we
+        // need to filter out tokens we don't need.
+        if (scopeAddresses.count(token.getSecurityScope().address) == 0)
+            continue;
         ret[token.getSecurityScope()] = token;
     }
     if (newTokens.size() > 0 && tokenCache)
