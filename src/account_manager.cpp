@@ -25,6 +25,13 @@ void AccountManager::addAccount(std::shared_ptr<Account> account) {
         throw AccountAlreadyExistsException();
 }
 
+void AccountManager::updateAccount(std::string username, std::string cid, std::shared_ptr<msa::LegacyToken> daToken) {
+    auto account = findAccount(cid);
+    account->setUsername(username);
+    account->setDaToken(std::move(daToken));
+    storageManager.saveAccount(*account);
+}
+
 void AccountManager::removeAccount(Account& account) {
     auto it = accounts.find(account.getCID());
     if (it == accounts.end())

@@ -21,6 +21,10 @@ private:
     std::string username;
     std::string cid;
 
+protected:
+
+    void setUsername(std::string const& username) { this->username = username; }
+
 public:
 
     BaseAccountInfo(std::string username, std::string cid) : username(std::move(username)), cid(std::move(cid)) {}
@@ -36,6 +40,12 @@ private:
 
     std::shared_ptr<LegacyToken> daToken;
     std::shared_ptr<TokenCache> tokenCache;
+
+protected:
+
+    friend class AccountManager;
+
+    void setDaToken(std::shared_ptr<LegacyToken> daToken) { this->daToken = std::move(daToken); }
 
 public:
 

@@ -34,6 +34,8 @@ public:
 
     std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
 
+    void updateAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
+
     void removeAccount(Account& account);
 
     std::shared_ptr<Account> findAccount(std::string const& cid);
