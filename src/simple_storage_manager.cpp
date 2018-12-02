@@ -128,7 +128,8 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
     if (strcmp(XMLUtils::getAttribute(root, "version", ""), "1"))
         throw std::runtime_error("Invalid version");
     std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
-    std::string puid = XMLUtils::getRequiredChildValue(root, "PUID");
+    auto puidNode = root.first_node("PUID");
+    std::string puid = puidNode ? XMLUtils::getValue(*puidNode) : "";
     std::string username = XMLUtils::getRequiredChildValue(root, "Username");
     auto daTokenNode = root.first_node("DaToken");
     std::shared_ptr<LegacyToken> daToken;
