@@ -23,7 +23,7 @@ DeviceAuth const& LoginManager::requestDeviceAuth() {
         if (storageManager)
             storageManager->saveDeviceAuthInfo(deviceAuth);
     }
-    if (!deviceAuth.token) {
+    if (!deviceAuth.token || deviceAuth.token->isExpired()) {
         network::DeviceAuthenticateRequest request (deviceAuth.membername, deviceAuth.password);
         auto response = request.send();
         deviceAuth.token = response.token;
