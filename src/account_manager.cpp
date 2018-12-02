@@ -17,12 +17,13 @@ AccountManager::~AccountManager() {
         p.second->removeChangeCallback(changeCallback);
 }
 
-std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::string cid,
+std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::string cid, std::string puid,
                                                     std::shared_ptr<LegacyToken> daToken) {
     if (accounts.count(cid) > 0)
         throw AccountAlreadyExistsException();
     auto tokenCache = storageManager.createTokenCache(cid);
-    std::shared_ptr<Account> account(new Account(std::move(username), std::move(cid), std::move(daToken), tokenCache));
+    std::shared_ptr<Account> account(new Account(std::move(username), std::move(cid), std::move(puid),
+            std::move(daToken), tokenCache));
     addAccount(account);
     storageManager.saveAccount(*account);
     return account;

@@ -128,6 +128,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
     if (strcmp(XMLUtils::getAttribute(root, "version", ""), "1"))
         throw std::runtime_error("Invalid version");
     std::string cid = XMLUtils::getRequiredChildValue(root, "CID");
+    std::string puid = XMLUtils::getRequiredChildValue(root, "PUID");
     std::string username = XMLUtils::getRequiredChildValue(root, "Username");
     auto daTokenNode = root.first_node("DaToken");
     std::shared_ptr<LegacyToken> daToken;
@@ -138,7 +139,7 @@ std::shared_ptr<Account> SimpleStorageManager::readAccountFile(std::string const
         auto token = Token::fromXml(*it);
         cache.insert({token->getSecurityScope().address, token});
     }
-    return std::shared_ptr<Account>(new Account(username, cid, daToken, createTokenCache(cid, std::move(cache))));
+    return std::shared_ptr<Account>(new Account(username, cid, puid, daToken, createTokenCache(cid, std::move(cache))));
 }
 
 std::shared_ptr<Account> SimpleStorageManager::readAccount(std::string const& cid) {
@@ -151,6 +152,7 @@ void SimpleStorageManager::saveAccount(Account const& account) {
     doc.append_node(root);
     root->append_attribute(doc.allocate_attribute("version", "1"));
     root->append_node(doc.allocate_node(node_element, "CID", account.getCID().c_str()));
+    root->append_node(doc.allocate_node(node_element, "PUID", account.getPUID().c_str()));
     root->append_node(doc.allocate_node(node_element, "Username", account.getUsername().c_str()));
     auto daToken = account.getDaToken();
     if (daToken) {

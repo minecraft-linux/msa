@@ -36,7 +36,8 @@ public:
 
     std::vector<BaseAccountInfo> getAccounts();
 
-    std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
+    std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::string puid,
+            std::shared_ptr<LegacyToken> daToken);
 
     void removeAccount(Account& account);
 

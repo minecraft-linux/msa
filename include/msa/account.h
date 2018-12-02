@@ -39,13 +39,14 @@ public:
 
 protected:
 
+    std::string puid;
     std::shared_ptr<LegacyToken> daToken;
     std::shared_ptr<TokenCache> tokenCache;
     std::set<std::shared_ptr<ChangeCallback>> changeCallbacks;
 
 public:
 
-    Account(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken,
+    Account(std::string username, std::string puid, std::string cid, std::shared_ptr<LegacyToken> daToken,
             std::shared_ptr<TokenCache> cache);
 
     void addChangeCallback(std::shared_ptr<ChangeCallback> callback);
@@ -57,6 +58,8 @@ public:
     std::unordered_map<SecurityScope, TokenResponse> requestTokens(LoginManager& loginManager,
                                                                    std::vector<SecurityScope> const& scopes,
                                                                    std::string const& clientAppUri = std::string());
+
+    std::string const& getPUID() const { return puid; }
 
     std::shared_ptr<LegacyToken> getDaToken() const { return daToken; }
 
