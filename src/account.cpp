@@ -7,9 +7,25 @@
 using namespace msa;
 
 Account::Account(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken,
-                 std::shared_ptr<TokenCache> cache)
-        : BaseAccountInfo(std::move(username), std::move(cid)), daToken(daToken), tokenCache(cache) {
+        std::shared_ptr<TokenCache> cache)
+        : BaseAccountInfo(std::move(username), std::move(cid)), daToken(std::move(daToken)),
+        tokenCache(std::move(cache)) {
     //
+}
+
+void Account::addChangeCallback(std::shared_ptr<ChangeCallback> callback) {
+    changeCallbacks.insert(callback);
+}
+
+void Account::removeChangeCallback(std::shared_ptr<ChangeCallback> callback) {
+    changeCallbacks.erase(callback);
+}
+
+void Account::updateDetails(std::string username, std::shared_ptr<msa::LegacyToken> daToken) {
+    this->username = username;
+    this->daToken = daToken;
+    for (auto const& el : changeCallbacks)
+        (*el)(*this);
 }
 
 
@@ -47,7 +63,10 @@ std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginMan
         if (!token.hasError())
             newTokens.push_back(token.getToken());
         // It seems that the AccountTokenRequest also returns an unasked-for http://Passport.NET/tb token. Therefore we
-        // need to filter out tokens we don't need.
+        // need to filter out tokens we don't need and properly process that one as well.
+        if (token.getSecurityScope() == SecurityScope{"http://Passport.NET/tb", ""} &&
+            token.getToken()->getType() == TokenType::Legacy)
+            updateDetails(getUsername(), token_pointer_cast<LegacyToken>(token.getToken()));
         if (scopeAddresses.count(token.getSecurityScope().address) == 0)
             continue;
         ret[token.getSecurityScope()] = token;

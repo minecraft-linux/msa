@@ -1,16 +1,28 @@
+#include <memory>
+
 #include <msa/account_manager.h>
 #include <msa/account.h>
 #include <msa/storage_manager.h>
 
 using namespace msa;
 
+AccountManager::AccountManager(msa::StorageManager &storageManager) : storageManager(storageManager) {
+    changeCallback = std::make_shared<Account::ChangeCallback>([this](Account& account) {
+        this->storageManager.saveAccount(account);
+    });
+}
+
+AccountManager::~AccountManager() {
+    for (auto const& p : accounts)
+        p.second->removeChangeCallback(changeCallback);
+}
+
 std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::string cid,
                                                     std::shared_ptr<LegacyToken> daToken) {
     if (accounts.count(cid) > 0)
         throw AccountAlreadyExistsException();
     auto tokenCache = storageManager.createTokenCache(cid);
-    std::shared_ptr<Account> account(new Account(std::move(username), std::move(cid), std::move(daToken),
-                                                 tokenCache));
+    std::shared_ptr<Account> account(new Account(std::move(username), std::move(cid), std::move(daToken), tokenCache));
     addAccount(account);
     storageManager.saveAccount(*account);
     return account;
@@ -21,15 +33,9 @@ std::vector<BaseAccountInfo> AccountManager::getAccounts() {
 }
 
 void AccountManager::addAccount(std::shared_ptr<Account> account) {
+    account->addChangeCallback(changeCallback);
     if (!accounts.insert({account->getCID(), account}).second)
         throw AccountAlreadyExistsException();
-}
-
-void AccountManager::updateAccount(std::string username, std::string cid, std::shared_ptr<msa::LegacyToken> daToken) {
-    auto account = findAccount(cid);
-    account->setUsername(username);
-    account->setDaToken(std::move(daToken));
-    storageManager.saveAccount(*account);
 }
 
 void AccountManager::removeAccount(Account& account) {

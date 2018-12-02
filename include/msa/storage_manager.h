@@ -11,6 +11,13 @@ class DeviceAuth;
 class Account;
 class BaseAccountInfo;
 
+class AccountStorageManager {
+
+public:
+    virtual void saveAccount(Account const& account) = 0;
+
+};
+
 class StorageManager {
 
 public:

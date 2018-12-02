@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <set>
 #include <memory>
 #include <unordered_map>
+#include <functional>
 #include "scope.h"
 #include "token_cache.h"
 
@@ -16,14 +17,10 @@ class LegacyToken;
 
 struct BaseAccountInfo {
 
-private:
+protected:
 
     std::string username;
     std::string cid;
-
-protected:
-
-    void setUsername(std::string const& username) { this->username = username; }
 
 public:
 
@@ -36,21 +33,26 @@ public:
 
 class Account : public BaseAccountInfo {
 
-private:
+public:
 
-    std::shared_ptr<LegacyToken> daToken;
-    std::shared_ptr<TokenCache> tokenCache;
+    using ChangeCallback = std::function<void (Account&)>;
 
 protected:
 
-    friend class AccountManager;
-
-    void setDaToken(std::shared_ptr<LegacyToken> daToken) { this->daToken = std::move(daToken); }
+    std::shared_ptr<LegacyToken> daToken;
+    std::shared_ptr<TokenCache> tokenCache;
+    std::set<std::shared_ptr<ChangeCallback>> changeCallbacks;
 
 public:
 
     Account(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken,
             std::shared_ptr<TokenCache> cache);
+
+    void addChangeCallback(std::shared_ptr<ChangeCallback> callback);
+
+    void removeChangeCallback(std::shared_ptr<ChangeCallback> callback);
+
+    void updateDetails(std::string username, std::shared_ptr<LegacyToken> daToken);
 
     std::unordered_map<SecurityScope, TokenResponse> requestTokens(LoginManager& loginManager,
                                                                    std::vector<SecurityScope> const& scopes,

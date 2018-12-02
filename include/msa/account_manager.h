@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include "account.h"
 
 namespace msa {
 
@@ -24,17 +25,18 @@ class AccountManager {
 private:
     StorageManager& storageManager;
     std::unordered_map<std::string, std::shared_ptr<Account>> accounts;
+    std::shared_ptr<Account::ChangeCallback> changeCallback;
 
     void addAccount(std::shared_ptr<Account> account);
 
 public:
-    AccountManager(StorageManager& storageManager) : storageManager(storageManager) {}
+    AccountManager(StorageManager& storageManager);
+
+    ~AccountManager();
 
     std::vector<BaseAccountInfo> getAccounts();
 
     std::shared_ptr<Account> addAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
-
-    void updateAccount(std::string username, std::string cid, std::shared_ptr<LegacyToken> daToken);
 
     void removeAccount(Account& account);
 
