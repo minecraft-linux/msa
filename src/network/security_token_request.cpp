@@ -4,6 +4,7 @@
 #include <cstring>
 #include <base64.h>
 #include <msa/network/crypto_utils.h>
+#include <msa/network/soap_exception.h>
 #include <log.h>
 
 using namespace msa::network;
@@ -167,6 +168,9 @@ SecurityTokenResponse SecurityTokenRequestBase::handleResponse(rapidxml::xml_doc
     LegacyToken* signKey;
 
     if (body.first_node("S:Fault") != nullptr && (signKey = getSigingKey()) != nullptr) {
+        if (header.first_node("wsse:Security") == nullptr)
+            throw SoapException::fromResponse(body);
+
         std::string nonce = findEncKeyNonce(envelope);
         std::string key = CryptoUtils::generateSharedKey(32, signKey->getBinarySecret(),
                                                          "WS-SecureConversationWS-SecureConversation", nonce);
