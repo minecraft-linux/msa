@@ -6,7 +6,7 @@
 
 using namespace msa;
 
-Account::Account(std::string username, std::string puid, std::string cid, std::shared_ptr<LegacyToken> daToken,
+Account::Account(std::string username, std::string cid, std::string puid, std::shared_ptr<LegacyToken> daToken,
         std::shared_ptr<TokenCache> cache)
         : BaseAccountInfo(std::move(username), std::move(cid)), puid(std::move(puid)), daToken(std::move(daToken)),
         tokenCache(std::move(cache)) {

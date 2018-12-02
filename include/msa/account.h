@@ -46,7 +46,7 @@ protected:
 
 public:
 
-    Account(std::string username, std::string puid, std::string cid, std::shared_ptr<LegacyToken> daToken,
+    Account(std::string username, std::string cid, std::string puid, std::shared_ptr<LegacyToken> daToken,
             std::shared_ptr<TokenCache> cache);
 
     void addChangeCallback(std::shared_ptr<ChangeCallback> callback);
