@@ -1,4 +1,5 @@
 #include <msa/network/request.h>
+#include <msa/network/curl.h>
 
 #include <log.h>
 #include <sstream>
@@ -8,6 +9,12 @@
 #include <msa/network/server_time.h>
 
 using namespace msa::network;
+
+std::function<void (CURL* curl)> CURLManager::initHook;
+
+void CURLManager::setCurlInitHook(std::function<void (CURL* curl)> func) {
+    initHook = func;
+}
 
 static size_t curl_stringstream_write_func(void* ptr, size_t size, size_t nmemb, std::stringstream* s) {
     s->write((char*) ptr, size * nmemb);
@@ -58,12 +65,15 @@ std::string RequestBase::sendInternal() const {
     std::stringstream output;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_stringstream_write_func);
-    curl_easy_perform(curl);
+
+    if (CURLManager::initHook != nullptr)
+        CURLManager::initHook(curl);
+    CURLcode ret = curl_easy_perform(curl);
 #ifdef MSA_LOG_NETWORK
-    Log::trace("MSANetwork", "Reply: %s", output.str().c_str());
+    Log::trace("MSANetwork", "Reply (%i): %s", ret, output.str().c_str());
     printf("%s\n", output.str().c_str());
 #else
-    Log::trace("MSANetwork", "Request complete: %s", url.c_str());
+    Log::trace("MSANetwork", "Request complete (%i): %s", ret, url.c_str());
 #endif
     return output.str();
 }
