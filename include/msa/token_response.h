@@ -17,8 +17,10 @@ private:
 
 public:
     TokenResponse() { }
-    TokenResponse(SecurityScope scope, std::shared_ptr<Token> token) : securityScope(scope), token(token) { }
-    TokenResponse(SecurityScope scope, std::shared_ptr<TokenErrorInfo> error) : securityScope(scope), error(error) { }
+    TokenResponse(SecurityScope scope, std::shared_ptr<Token> token) :
+            securityScope(std::move(scope)), token(std::move(token)) {}
+    TokenResponse(SecurityScope scope, std::shared_ptr<TokenErrorInfo> error) :
+            securityScope(std::move(scope)), error(std::move(error)) {}
 
     static TokenResponse fromXml(rapidxml::xml_node<char> const& data);
 

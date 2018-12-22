@@ -28,8 +28,8 @@ protected:
 
 public:
     Token() { }
-    Token(SecurityScope const& scope, TimePoint create, TimePoint expire) : hasLifetimeInfo(true),
-        securityScope(scope), createTime(create), expireTime(expire) { }
+    Token(SecurityScope scope, TimePoint create, TimePoint expire) : hasLifetimeInfo(true),
+        securityScope(std::move(scope)), createTime(create), expireTime(expire) { }
 
     virtual ~Token() = default;
 

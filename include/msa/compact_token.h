@@ -10,10 +10,10 @@ private:
     std::string binaryToken;
 
 public:
-    CompactToken(std::string const& binaryToken) : binaryToken(binaryToken) { }
+    CompactToken(std::string binaryToken) : binaryToken(std::move(binaryToken)) { }
 
-    CompactToken(SecurityScope const& scope, TimePoint create, TimePoint expire, std::string const& binaryToken) :
-            Token(scope, create, expire), binaryToken(binaryToken) { }
+    CompactToken(SecurityScope const& scope, TimePoint create, TimePoint expire, std::string binaryToken) :
+            Token(scope, create, expire), binaryToken(std::move(binaryToken)) { }
 
     CompactToken(rapidxml::xml_node<char> const& data);
 

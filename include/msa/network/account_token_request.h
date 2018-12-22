@@ -33,8 +33,8 @@ public:
     std::string clientAppUri;
 
     AccountTokenRequest(std::shared_ptr<LegacyToken> daToken, std::shared_ptr<LegacyToken> deviceToken,
-                        std::vector<SecurityScope> scopes = {}) : daToken(daToken), deviceToken(deviceToken),
-                                                                  scopes(std::move(scopes)) {}
+                        std::vector<SecurityScope> scopes = {})
+            : daToken(std::move(daToken)), deviceToken(std::move(deviceToken)), scopes(std::move(scopes)) {}
 
     void addRequestScope(SecurityScope scope) {
         scopes.emplace_back(std::move(scope));

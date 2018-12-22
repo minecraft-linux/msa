@@ -8,7 +8,7 @@ namespace msa {
 class ParseException : public std::exception {
 
 private:
-    std::string message;
+    const std::string message;
 
 public:
     ParseException(std::string message) : message(std::move(message)) {}

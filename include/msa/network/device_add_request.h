@@ -20,7 +20,8 @@ private:
 public:
     std::string membername, password;
 
-    DeviceAddRequest(std::string membername, std::string password) : membername(membername), password(password) {}
+    DeviceAddRequest(std::string membername, std::string password)
+            : membername(std::move(membername)), password(std::move(password)) {}
 
 };
 

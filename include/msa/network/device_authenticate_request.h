@@ -22,7 +22,8 @@ protected:
 public:
     std::string username, password;
 
-    DeviceAuthenticateRequest(std::string username, std::string password) : username(username), password(password) {}
+    DeviceAuthenticateRequest(std::string username, std::string password)
+            : username(std::move(username)), password(std::move(password)) {}
 
 };
 

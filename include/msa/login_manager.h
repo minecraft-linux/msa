@@ -11,7 +11,7 @@ class StorageManager;
 class LoginManager {
 
 private:
-    const StorageManager* storageManager;
+    StorageManager* const storageManager;
     std::mutex deviceAuthMutex;
     DeviceAuth deviceAuth;
     bool hasReadDeviceAuth = false;

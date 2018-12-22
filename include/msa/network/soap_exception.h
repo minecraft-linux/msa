@@ -18,7 +18,7 @@ private:
 protected:
     std::string asString;
 
-    SoapException(rapidxml::xml_node<char> const& doc);
+    explicit SoapException(rapidxml::xml_node<char> const& doc);
 
 public:
     SoapException(std::string code, std::string subcode, std::string reason) : errorCode(std::move(code)),

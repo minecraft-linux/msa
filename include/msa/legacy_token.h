@@ -11,12 +11,12 @@ private:
     std::string binarySecret;
 
 public:
-    LegacyToken(std::string const& xmlData, std::string const& key) : xmlData(xmlData), binarySecret(key) { }
+    LegacyToken(std::string xmlData, std::string key) : xmlData(std::move(xmlData)), binarySecret(std::move(key)) { }
 
-    LegacyToken(SecurityScope const& scope, TimePoint create, TimePoint expire, std::string const& xmlData,
-                std::string const& key) : Token(scope, create, expire), xmlData(xmlData), binarySecret(key) { }
+    LegacyToken(SecurityScope const& scope, TimePoint create, TimePoint expire, std::string xmlData, std::string key)
+            : Token(scope, create, expire), xmlData(std::move(xmlData)), binarySecret(std::move(key)) {}
 
-    LegacyToken(rapidxml::xml_node<char> const& data);
+    explicit LegacyToken(rapidxml::xml_node<char> const& data);
 
     TokenType getType() const override { return TokenType::Legacy; }
 

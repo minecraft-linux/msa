@@ -11,8 +11,8 @@ namespace network {
 class ServiceException : public std::exception {
 
 private:
-    int errorCode;
-    int errorSubcode;
+    const int errorCode;
+    const long long errorSubcode;
     std::string asString;
 
     std::string createString() const;
@@ -26,7 +26,7 @@ public:
 
     inline int code() const { return errorCode; }
 
-    inline int subcode() const { return errorSubcode; }
+    inline long long subcode() const { return errorSubcode; }
 
     const char* what() const noexcept override {
         return asString.c_str();

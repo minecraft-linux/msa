@@ -15,10 +15,10 @@ class LegacyToken;
 class BaseAccountInfo;
 
 struct NoSuchAccountException : public std::exception {
-    virtual const char* what() const noexcept { return "No account found"; }
+    const char* what() const noexcept override { return "No account found"; }
 };
 struct AccountAlreadyExistsException : public std::exception {
-    virtual const char* what() const noexcept { return "Account with this CID already exists"; }
+    const char* what() const noexcept override { return "Account with this CID already exists"; }
 };
 
 class AccountManager {
@@ -32,7 +32,7 @@ private:
     void addAccount(std::shared_ptr<Account> account);
 
 public:
-    AccountManager(StorageManager& storageManager);
+    explicit AccountManager(StorageManager& storageManager);
 
     ~AccountManager();
 
