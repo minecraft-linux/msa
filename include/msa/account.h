@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
+#include <mutex>
 #include "scope.h"
 #include "token_cache.h"
 
@@ -43,6 +44,7 @@ protected:
     std::shared_ptr<LegacyToken> daToken;
     std::shared_ptr<TokenCache> tokenCache;
     std::set<std::shared_ptr<ChangeCallback>> changeCallbacks;
+    std::mutex tokensMutex;
 
 public:
 

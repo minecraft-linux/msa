@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 #include "account.h"
 
 namespace msa {
@@ -24,6 +25,7 @@ class AccountManager {
 
 private:
     StorageManager& storageManager;
+    std::mutex accountsMutex;
     std::unordered_map<std::string, std::shared_ptr<Account>> accounts;
     std::shared_ptr<Account::ChangeCallback> changeCallback;
 

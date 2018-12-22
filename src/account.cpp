@@ -32,6 +32,7 @@ void Account::updateDetails(std::string username, std::shared_ptr<msa::LegacyTok
 std::unordered_map<SecurityScope, TokenResponse> Account::requestTokens(LoginManager& loginManager,
                                                                         std::vector<SecurityScope> const& scopes,
                                                                         std::string const& clientAppUri) {
+    std::lock_guard<std::mutex> lock (tokensMutex);
     std::vector<SecurityScope> requestScopes;
     std::unordered_map<SecurityScope, TokenResponse> ret;
     std::unordered_map<SecurityScope, std::shared_ptr<Token>> cachedTokens;

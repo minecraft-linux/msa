@@ -7,6 +7,7 @@
 using namespace msa;
 
 DeviceAuth const& LoginManager::requestDeviceAuth() {
+    std::lock_guard<std::mutex> lock (deviceAuthMutex);
     if (!hasReadDeviceAuth && storageManager) {
         storageManager->readDeviceAuthInfo(deviceAuth);
         hasReadDeviceAuth = true;
