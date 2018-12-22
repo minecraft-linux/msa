@@ -1,6 +1,7 @@
 #pragma once
 
 #include <curl/curl.h>
+#include <functional>
 
 namespace msa {
 namespace network {
