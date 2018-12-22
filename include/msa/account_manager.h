@@ -25,7 +25,7 @@ class AccountManager {
 
 private:
     StorageManager& storageManager;
-    std::mutex accountsMutex;
+    std::recursive_mutex accountsMutex;
     std::unordered_map<std::string, std::shared_ptr<Account>> accounts;
     std::shared_ptr<Account::ChangeCallback> changeCallback;
 

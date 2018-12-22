@@ -13,14 +13,14 @@ AccountManager::AccountManager(msa::StorageManager &storageManager) : storageMan
 }
 
 AccountManager::~AccountManager() {
-    std::lock_guard<std::mutex> lock (accountsMutex);
+    std::lock_guard<std::recursive_mutex> lock (accountsMutex);
     for (auto const& p : accounts)
         p.second->removeChangeCallback(changeCallback);
 }
 
 std::shared_ptr<Account> AccountManager::addAccount(std::string username, std::string cid, std::string puid,
                                                     std::shared_ptr<LegacyToken> daToken) {
-    std::lock_guard<std::mutex> lock (accountsMutex);
+    std::lock_guard<std::recursive_mutex> lock (accountsMutex);
     if (accounts.count(cid) > 0)
         throw AccountAlreadyExistsException();
     auto tokenCache = storageManager.createTokenCache(cid);
@@ -36,14 +36,14 @@ std::vector<BaseAccountInfo> AccountManager::getAccounts() {
 }
 
 void AccountManager::addAccount(std::shared_ptr<Account> account) {
-    std::lock_guard<std::mutex> lock (accountsMutex);
+    std::lock_guard<std::recursive_mutex> lock (accountsMutex);
     account->addChangeCallback(changeCallback);
     if (!accounts.insert({account->getCID(), account}).second)
         throw AccountAlreadyExistsException();
 }
 
 void AccountManager::removeAccount(Account& account) {
-    std::lock_guard<std::mutex> lock (accountsMutex);
+    std::lock_guard<std::recursive_mutex> lock (accountsMutex);
     auto it = accounts.find(account.getCID());
     if (it == accounts.end())
         throw NoSuchAccountException();
@@ -55,7 +55,7 @@ void AccountManager::removeAccount(Account& account) {
 }
 
 std::shared_ptr<Account> AccountManager::findAccount(std::string const& cid) {
-    std::lock_guard<std::mutex> lock (accountsMutex);
+    std::lock_guard<std::recursive_mutex> lock (accountsMutex);
     auto it = accounts.find(cid);
     if (it != accounts.end())
         return it->second;
