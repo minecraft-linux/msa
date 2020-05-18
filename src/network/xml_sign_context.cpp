@@ -5,6 +5,7 @@
 #include <rapidxml_print.hpp>
 #include <base64.h>
 #include <msa/xml_utils.h>
+#include <stdexcept>
 
 using namespace msa::network;
 using namespace rapidxml;

@@ -6,6 +6,7 @@
 #include <msa/network/crypto_utils.h>
 #include <msa/network/soap_exception.h>
 #include <log.h>
+#include <stdexcept>
 
 using namespace msa::network;
 using namespace rapidxml;
