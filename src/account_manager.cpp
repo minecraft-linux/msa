@@ -3,6 +3,7 @@
 #include <msa/account_manager.h>
 #include <msa/account.h>
 #include <msa/storage_manager.h>
+#include <stdexcept>
 
 using namespace msa;
 
